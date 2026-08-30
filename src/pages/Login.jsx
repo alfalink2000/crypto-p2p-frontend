@@ -32,7 +32,16 @@ export default function Login() {
     if (!email.trim() || !password) return setError('Completa todos los campos.');
     const r = isLogin
       ? await dispatch(login({ email: email.trim(), password }))
-      : await dispatch(register({ email: email.trim(), password, full_name: fullName.trim() || email.trim() }));
+      : await dispatch(
+          register({
+            email: email.trim(),
+            password,
+            full_name: fullName.trim() || email.trim(),
+            nickname: email.trim().split('@')[0] || null,
+            account_holder: fullName.trim() || email.trim(),
+            account_number: wantSell ? card.trim() : null,
+          })
+        );
     if (r.meta?.requestStatus === 'rejected') {
       setError(r.payload || 'Error de conexión.');
       return;

@@ -62,7 +62,7 @@ export default function Sala() {
 
   const deal = live ? live.deal : mockDeal;
 
-  const reload = (silent = false) => {
+  const reload = (silent = false, opts = {}) => {
     if (silent) setBusy('');
     api
       .get(`/deals/${dealId}`)
@@ -72,8 +72,10 @@ export default function Sala() {
         setDemo(false);
       })
       .catch(() => {
-        setList(mockMessages);
-        setDemo(true);
+        if (!opts.keep) {
+          setList(mockMessages);
+          setDemo(true);
+        }
       });
   };
 
@@ -81,6 +83,16 @@ export default function Sala() {
     reload(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dealId]);
+
+  // Chat en vivo: polling ligero mientras la sala esté abierta y sin cerrar
+  useEffect(() => {
+    if (demo && !live) return;
+    const st = live?.deal.status;
+    if (st === 'COMPLETED' || st === 'CANCELLED') return;
+    const iv = setInterval(() => reload(true, { keep: true }), 3000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo, live?.deal?.status]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
