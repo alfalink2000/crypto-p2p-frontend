@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import TopNav from '../components/TopNav.jsx';
+import TopBar from '../components/TopBar.jsx';
+import BottomNav from '../components/BottomNav.jsx';
 import AdCard from '../components/AdCard.jsx';
 import { api, mapAd } from '../api/client.js';
-import { ads as mockAds, marketStats, provinces, methods } from '../data/mock.js';
-import { formatRate } from '../lib/format.js';
+import { ads as mockAds, marketStats, methodChips } from '../data/mock.js';
 
 export default function Market() {
   const [params] = useSearchParams();
   const [side, setSide] = useState(params.get('side') === 'SELL' ? 'SELL' : 'BUY');
   const [province, setProvince] = useState('Todas');
-  const [method, setMethod] = useState('Todos');
-  const [q, setQ] = useState('');
+  const [method, setMethod] = useState('Transfermóvil');
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -19,8 +18,9 @@ export default function Market() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
+    const qs = `side=${side}&province=${encodeURIComponent(province)}&method=${encodeURIComponent(method)}`;
     api
-      .get(`/ads?side=${side}&province=${encodeURIComponent(province)}&method=${encodeURIComponent(method)}&q=${encodeURIComponent(q)}`)
+      .get(`/ads?${qs}`)
       .then((res) => {
         if (!alive) return;
         setAds(res.ads.map(mapAd));
@@ -32,8 +32,7 @@ export default function Market() {
           mockAds.filter((a) => {
             if (a.side !== side) return false;
             if (province !== 'Todas' && a.seller.city !== province) return false;
-            if (method !== 'Todos' && a.method !== method) return false;
-            if (q && !a.seller.name.toLowerCase().includes(q.toLowerCase())) return false;
+            if (method && !(a.methods || [a.method]).includes(method)) return false;
             return true;
           })
         );
@@ -43,66 +42,93 @@ export default function Market() {
     return () => {
       alive = false;
     };
-  }, [side, province, method, q]);
+  }, [side, province, method]);
 
   return (
-    <div className="page">
-      <TopNav />
-
-      <div className="market-head">
-        <h1 className="market-title">
-          {side === 'BUY' ? 'Comprar USDT' : 'Vender USDT'}
-        </h1>
-        {offline ? (
-          <p className="muted small">
-            Sin conexión con el servidor · mostrando datos de demostración
-            <br />
-            Tasa promedio del feed: <b className="ok">{formatRate(marketStats.avgRate)}</b>
+    <>
+      <div className="offline-banner" hidden={!offline}>
+        SIN CONEXIÓN A INTERNET
+      </div>
+      <TopBar />
+      <main className="app-shell page">
+        <div className="market-head">
+          <h1 className="market-title">{side === 'BUY' ? 'Comprar USDT' : 'Vender USDT'}</h1>
+          <p className="market-sub">
+            Tasa fijada por cada vendedor · mercado informal{offline ? ' · datos de demostración' : ''}
           </p>
-        ) : (
-          <p className="muted small">
-            Tasa fijada por cada vendedor · mercado informal
-          </p>
-        )}
-      </div>
+        </div>
 
-      <div className="tabs">
-        <button className={`tab ${side === 'BUY' ? 'tab-on' : ''}`} onClick={() => setSide('BUY')}>
-          Comprar
-        </button>
-        <button className={`tab ${side === 'SELL' ? 'tab-on' : ''}`} onClick={() => setSide('SELL')}>
-          Vender
-        </button>
-      </div>
+        <div className="seg">
+          <button className={`seg-btn ${side === 'BUY' ? 'on' : 'off'}`} onClick={() => setSide('BUY')}>
+            Comprar
+          </button>
+          <button className={`seg-btn ${side === 'SELL' ? 'on' : 'off'}`} onClick={() => setSide('SELL')}>
+            Vender
+          </button>
+        </div>
 
-      <div className="filters">
-        <input
-          className="f-search"
-          placeholder="Buscar por vendedor o provincia…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select value={province} onChange={(e) => setProvince(e.target.value)}>
-          {provinces.map((p) => (
-            <option key={p}>{p}</option>
+        <div className="chip-row">
+          <button className={`chip ${province !== 'Todas' ? 'on' : ''}`} onClick={() => setProvince(province === 'Todas' ? 'La Habana' : 'Todas')}>
+            <span className="mi">{province === 'Todas' ? 'location_on' : 'close'}</span>
+            {province === 'Todas' ? 'Todas las provincias' : province}
+          </button>
+          {methodChips.map((m) => (
+            <button key={m} className={`chip ${method === m ? 'on' : ''}`} onClick={() => setMethod(method === m ? '' : m)}>
+              {m}
+              {method === m && <span className="mi">close</span>}
+            </button>
           ))}
-        </select>
-        <select value={method} onChange={(e) => setMethod(e.target.value)}>
-          {methods.map((m) => (
-            <option key={m}>{m}</option>
-          ))}
-        </select>
-      </div>
+        </div>
 
-      <div className="ad-list">
-        {loading && <p className="muted empty">Cargando anuncios…</p>}
-        {!loading && ads.length === 0 && (
-          <p className="muted empty">No hay anuncios con esos filtros.</p>
-        )}
-        {ads.map((a) => (
-          <AdCard key={a.id} ad={a} />
-        ))}
-      </div>
-    </div>
+        <div className="stats-bar">
+          <div className="stats-avg">
+            <span className="stats-label">Promedio de compra (24h)</span>
+            <span className="stats-val">
+              {marketStats.avgRate.toFixed(2)} <small>CUP</small>
+            </span>
+          </div>
+          <span className="stats-trend">
+            <span className="mi">trending_up</span> +1.2%
+          </span>
+        </div>
+
+        <div className="offer-list">
+          {loading &&
+            Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="offer-card animate-pulse" style={{ gap: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div className="skel-bg" style={{ width: 40, height: 40, borderRadius: '50%' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div className="skel-bg" style={{ width: 96, height: 16 }} />
+                      <div className="skel-bg" style={{ width: 64, height: 12 }} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                    <div className="skel-bg" style={{ width: 80, height: 24 }} />
+                    <div className="skel-bg" style={{ width: 48, height: 12 }} />
+                  </div>
+                </div>
+                <div className="skel-bg" style={{ height: 1 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="skel-bg" style={{ width: 64, height: 12 }} />
+                    <div className="skel-bg" style={{ width: 96, height: 16 }} />
+                  </div>
+                  <div className="skel-bg" style={{ width: 64, height: 20 }} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div className="skel-bg" style={{ width: 96, height: 24 }} />
+                  <div className="skel-bg" style={{ width: 80, height: 24 }} />
+                </div>
+                <div className="skel-bg" style={{ height: 48, borderRadius: '0.75rem' }} />
+              </div>
+            ))}
+          {!loading && ads.length === 0 && <p className="empty">No hay anuncios con esos filtros.</p>}
+          {!loading && ads.map((a) => <AdCard key={a.id} ad={a} />)}
+        </div>
+      </main>
+      <BottomNav />
+    </>
   );
 }

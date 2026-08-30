@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import TopNav from '../components/TopNav.jsx';
-import StatusBadge from '../components/StatusBadge.jsx';
+import { useParams } from 'react-router-dom';
+import TopBar from '../components/TopBar.jsx';
+import BottomNav from '../components/BottomNav.jsx';
 import { api, getToken } from '../api/client.js';
-import { deal as mockDeal, dealTimeline, messages as mockMessages } from '../data/mock.js';
-import { formatUSDT, formatCUP, formatRate, formatClock, pad, countdown } from '../lib/format.js';
+import { deal as mockDeal, messages as mockMessages } from '../data/mock.js';
+import { formatCUP, formatRate, formatClock, pad, countdown } from '../lib/format.js';
 
 function useTimer(ms) {
-  const [left, setLeft] = useState(countdown(new Date(Date.now() + ms).toISOString()));
+  const [left, setLeft] = useState({ h: 1, m: 59, s: 45 });
   useEffect(() => {
+    const end = Date.now() + ms;
     const t = setInterval(() => {
-      setLeft(countdown(new Date(Date.now() + ms).toISOString()));
+      const diff = end - Date.now();
+      if (diff <= 0) return setLeft({ h: 0, m: 0, s: 0 });
+      const s = Math.floor(diff / 1000);
+      setLeft({ h: Math.floor(s / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 });
     }, 1000);
     return () => clearInterval(t);
   }, [ms]);
@@ -25,46 +29,36 @@ function myUserId() {
   }
 }
 
-function buildTimeline(t) {
-  const at = (ts) => formatClock(ts);
-  const items = [{ key: 'created', label: 'Operación creada', at: at(t.created_at), done: true }];
-  if (t.paid_at) {
-    items.push({
-      key: 'paid',
-      label: t.my_side === 'SELL' ? 'El comprador pagó' : `Pagaste ${formatCUP(t.fiat_total)}`,
-      at: at(t.paid_at),
-      done: true,
-      current: t.status === 'PENDING_CONFIRMATION',
-    });
-  } else {
-    items.push({ key: 'paid', label: 'Esperando tu pago', at: '', done: false });
-  }
-  if (t.status === 'COMPLETED') {
-    items.push({ key: 'released', label: 'Vendedor confirmó: USDT liberado', at: at(t.confirmed_at), done: true });
-    items.push({ key: 'complete', label: 'Operación completada', at: at(t.confirmed_at), done: true });
-  } else if (t.status === 'DISPUTED') {
-    items.push({ key: 'released', label: 'Disputa abierta · revisa soporte', at: at(t.disputed_at), done: true });
-  } else if (t.status === 'CANCELLED') {
-    items.push({ key: 'released', label: 'Cancelada · fondos devueltos', at: at(t.cancelled_at), done: true });
-  } else {
-    items.push({ key: 'released', label: 'Vendedor confirma en su app', at: '', done: false });
-  }
-  return items;
+function tlState(status) {
+  if (status === 'COMPLETED') return { active: 4 };
+  if (status === 'DISPUTED') return { active: 3, dispute: true };
+  if (status === 'CANCELLED') return { active: 0, cancelled: true };
+  if (status === 'PENDING_CONFIRMATION') return { active: 2 };
+  return { active: 1 };
 }
+
+const steps = [
+  { icon: 'check', label: 'Inicio' },
+  { icon: 'lock', label: 'USDT\nCongelado' },
+  { icon: 'circle', label: 'Pago\nEnviado' },
+  { icon: 'receipt', label: 'Pago\nRecibido' },
+  { icon: 'lock_open', label: 'Liberado' },
+];
 
 export default function Sala() {
   const { dealId } = useParams();
-  const [live, setLive] = useState(null); // datos reales de la API
+  const [live, setLive] = useState(null); // datos API (deal, partner, messages, proofs, payment_target)
   const [demo, setDemo] = useState(true);
   const [role, setRole] = useState('COMPRADOR');
-  const [list, setList] = useState(mockMessages);
+  const [list, setList] = useState([]);
   const [text, setText] = useState('');
-  const [released, setReleased] = useState(false);
-  const [justPaid, setJustPaid] = useState(false);
   const [busy, setBusy] = useState('');
+  const [copied, setCopied] = useState(false);
   const fileRef = useRef(null);
   const endRef = useRef(null);
   const t = useTimer(2 * 60 * 60 * 1000);
+
+  const deal = live ? live.deal : mockDeal;
 
   const reload = (silent = false) => {
     if (silent) setBusy('');
@@ -72,10 +66,11 @@ export default function Sala() {
       .get(`/deals/${dealId}`)
       .then((res) => {
         setLive(res);
-        setList(res.messages);
+        setList(res.messages || []);
         setDemo(false);
       })
       .catch(() => {
+        setList(mockMessages);
         setDemo(true);
       });
   };
@@ -89,21 +84,18 @@ export default function Sala() {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [list, live]);
 
-  // ---------- acciones ----------
+  const status = live ? deal.status : demo ? (role === 'VENDEDOR' ? 'FROZEN' : 'PENDING_CONFIRMATION') : deal.status;
+  const isSeller = live ? deal.my_side === 'SELL' : demo && role === 'VENDEDOR';
+
   const send = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-    setBusy('send');
     if (!demo) {
-      api
-        .post(`/deals/${dealId}/messages`, { content: text.trim() })
-        .then(() => reload())
-        .catch(() => reload());
+      api.post(`/deals/${dealId}/messages`, { content: text.trim() }).then(() => reload()).catch(() => reload());
     } else {
-      setList([...list, { id: Date.now(), from: 'me', name: 'Tú', text: text.trim(), at: 'ahora' }]);
+      setList((l) => [...l, { id: Date.now(), from: 'me', name: 'Tú', text: text.trim(), at: 'ahora' }]);
     }
     setText('');
-    setBusy('');
   };
 
   const onFile = (e) => {
@@ -113,8 +105,7 @@ export default function Sala() {
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result || '');
-      const comma = dataUrl.indexOf(',');
-      const base64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+      const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
       api
         .upload(`/deals/${dealId}/proof`, { data: base64, mime: file.type })
         .then(() => reload())
@@ -134,221 +125,304 @@ export default function Sala() {
       .finally(() => setBusy(''));
   };
 
-  const partnerName = () =>
-    live ? live.partner.full_name || 'Contraparte' : 'Carlos M.';
-  const payment = () =>
-    live
-      ? live.payment_target
-      : {
-          method: 'Transfermóvil',
-          holder: 'Carlos Manuel Ortega Prieto',
-          account: mockDeal.partner.phone,
-          phone: mockDeal.partner.phone,
-        };
+  const copyAccount = () => {
+    const acc = live ? live.payment_target?.account : mockDeal.partner.accountName;
+    if (navigator.clipboard) navigator.clipboard.writeText(acc || '');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
-  // ---------- render ----------
-  const isSeller = live
-    ? live.deal.my_side === 'SELL'
-    : demo && role === 'VENDEDOR';
-  const status = live ? live.deal.status : released ? 'COMPLETED' : justPaid || demo ? 'PENDING_CONFIRMATION' : 'FROZEN';
-  const code = live ? live.deal.code : mockDeal.id;
-  const amount = live ? live.deal.amount : mockDeal.amount;
-  const rate = live ? live.deal.rate : mockDeal.rate;
-  const method = live ? live.deal.method : mockDeal.method;
-  const timeline = live ? buildTimeline(live.deal) : dealTimeline;
-  const p = payment();
+  const payment = live
+    ? live.payment_target || { method: deal.method, holder: live.partner?.full_name, account: '' }
+    : {
+        method: mockDeal.method,
+        holder: mockDeal.partner.accountName,
+        account: mockDeal.partner.paymentMethod,
+      };
+
+  const amount = Number(deal.amount);
+  const rate = Number(deal.rate);
+  const fiat = live ? deal.fiat_total : mockDeal.fiatTotal || amount * rate;
+
+  const tls = tlState(status);
+  const activeIdx = tls.active;
+
+  const renderMsg = (m) => {
+    if (live && m.sender_id == null) {
+      return (
+        <div key={m.id} className="msg-sys ok">
+          <div className="bubble-sys">
+            <span className="mi">check_circle</span>
+            <span>{m.content}</span>
+          </div>
+        </div>
+      );
+    }
+    if (!live && m.from === 'system') {
+      return (
+        <div key={m.id} className="msg-sys ok">
+          <div className="bubble-sys">
+            <span className="mi">check_circle</span>
+            <span>{m.text}</span>
+          </div>
+        </div>
+      );
+    }
+    const me = live ? m.sender_id === myUserId() : m.from === 'me';
+    const name = live ? m.sender_name : m.name;
+    const at = formatClock(m.created_at) || m.at || '';
+    return (
+      <div key={m.id} className={`msg-row ${me ? 'me' : ''}`} style={{ justifyContent: me ? 'flex-end' : 'flex-start' }}>
+        {!me && (
+          <div className="avatar-xs">{name ? name[0].toUpperCase() : 'C'}</div>
+        )}
+        <div className="msg-body">
+          {!me && (
+            <div className="msg-meta">
+              <span className="name">{name}</span>
+            </div>
+          )}
+          <div className={`bubble ${me ? 'me' : 'them'}`}>
+            <p>{(live ? m.content : m.text) || m.content}</p>
+            {m.proof && (
+              <div className="att">
+                <span className="att-thumb" />
+                <div>
+                  <b>{m.proof.name || m.proof}</b>
+                  <small>{m.proofMeta || ''}</small>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="msg-meta" style={{ justifyContent: me ? 'flex-end' : 'flex-start' }}>
+            <span className="time">{at}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="page sala">
-      <TopNav />
-
-      <div className="sala-head">
-        <div className="sala-head-row">
-          <Link to="/mercado" className="back">
-            ←
-          </Link>
-          <div>
-            <b>Operación #{code}</b>
-            <p className="muted small">
-              {amount} USDT a {formatRate(rate)} · {method}
-            </p>
-          </div>
-          <StatusBadge status={status} />
-          {demo && (
-            <select className="role-switch" value={role} onChange={(e) => setRole(e.target.value)}>
-              <option>COMPRADOR</option>
-              <option>VENDEDOR</option>
-            </select>
-          )}
-        </div>
-
-        <div className="escrow-strip">
-          <span className="dot-pulse" />
-          Escrow activo: el USDT del vendedor está congelado. Nada se libera por captura: solo la
-          confirmación del vendedor en su app del banco.
-        </div>
-
-        {(status === 'FROZEN' || status === 'PENDING_CONFIRMATION') && (
-          <div className={`timer ${t.h === 0 && t.m <= 5 ? 'timer-warn' : ''}`}>
-            <span className="muted small">Tiempo límite para esta etapa</span>
-            <strong>
-              {pad(t.h)}:{pad(t.m)}:{pad(t.s)}
-            </strong>
-          </div>
-        )}
-      </div>
-
-      <div className="sala-body">
-        <div className="timeline">
-          {timeline.map((s) => (
-            <div key={s.key} className={`tl-item ${s.done ? 'tl-done' : ''} ${s.current ? 'tl-current' : ''}`}>
-              <span className="tl-dot" />
-              <div>
-                <b>{s.label}</b>
-                <span className="muted small">{s.at}</span>
+    <>
+      <TopBar />
+      <main className="app-shell sala-page" style={{ paddingBottom: demo || live ? 0 : '6rem' }}>
+        <div className="sala-sticky">
+          <div className="sala-head-row">
+            <div>
+              <h1 className="sala-title">Operación #{deal.code || deal.id}</h1>
+              <div className="sala-sub">
+                <span className="escrow-pill">
+                  {status === 'COMPLETED' ? 'Completado' : status === 'CANCELLED' ? 'Cancelado' : status === 'DISPUTED' ? 'En disputa' : 'Escrow Activo'}
+                </span>
+                {status !== 'COMPLETED' && status !== 'CANCELLED' && (
+                  <span className="countdown">
+                    <span className="mi">schedule</span>
+                    <span className="animate-pulse">
+                      {pad(t.h)}:{pad(t.m)}:{pad(t.s)}
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
-          ))}
+            {demo && (
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                style={{
+                  height: 40,
+                  background: 'var(--surface-high)',
+                  border: '1px solid var(--outline-variant)',
+                  borderRadius: '0.75rem',
+                  color: 'var(--on-surface)',
+                  fontSize: 12,
+                  padding: '0 0.5rem',
+                }}
+                aria-label="Rol de demostración"
+              >
+                <option>COMPRADOR</option>
+                <option>VENDEDOR</option>
+              </select>
+            )}
+            <button className="help-btn" aria-label="Ayuda">
+              <span className="mi">help</span>
+            </button>
+          </div>
+          <div className="protect-banner">
+            <span className="mi filled">verified_user</span>
+            <span>Tus fondos están protegidos en Escrow</span>
+          </div>
         </div>
 
-        {isSeller ? (
-          <div className="pay-card card">
-            <h3>Como vendedor</h3>
-            {status === 'FROZEN' ? (
-              <>
-                <p className="muted small">
-                  El comprador aún no paga. Cuando lo haga, verifica en <b>tu</b> app del banco;
-                  las capturas aquí son solo evidencia, no confirmación.
-                </p>
-                <button className="btn btn-ghost btn-block" onClick={() => act('cancel', '/cancel')} disabled={!!busy}>
-                  Cancelar operación
-                </button>
-              </>
-            ) : status === 'PENDING_CONFIRMATION' ? (
-              <>
-                <p className="muted">
-                  El comprador marcó el pago. Confirma en tu app del banco y libera los USDT.
-                </p>
-                <div className="pay-rows">
-                  <div>
-                    <span className="muted small">Monto a recibir</span>
-                    <b>{formatCUP(live ? live.deal.fiat_total : mockDeal.fiatTotal)}</b>
+        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {!isSeller && status === 'FROZEN' && (
+            <div className="info-banner">
+              <span className="mi">info</span>
+              <span>CambioYA nunca te pedirá tu contraseña ni códigos de verificación por este chat.</span>
+            </div>
+          )}
+
+          {/* timeline */}
+          <div className="tl-h">
+            {steps.map((s, i) => (
+              <div key={s.icon + i} style={{ display: 'contents' }}>
+                {i > 0 && (
+                  <div
+                    className={`tl-fill ${i <= activeIdx ? 'done' : i === activeIdx + 1 ? 'partial' : ''}`}
+                    style={i === activeIdx + 1 ? { background: 'rgba(63, 229, 108, 0.3)' } : undefined}
+                  />
+                )}
+                <div className="tl-step">
+                  <div className={`tl-dot ${i < activeIdx ? 'done' : ''} ${i === activeIdx && !tls.dispute ? 'current' : ''}`}>
+                    {i < activeIdx ? <span className="mi">check</span> : s.icon === 'circle' ? <span /> : <span className="mi">{s.icon}</span>}
                   </div>
-                  <div>
-                    <span className="muted small">Comprador</span>
-                    <b>{partnerName()}</b>
-                  </div>
+                  <span className={`tl-label ${i <= activeIdx ? 'on' : ''}`}>{s.label}</span>
                 </div>
-                <button
-                  className="btn btn-ok btn-block"
-                  onClick={() => act('release', '/confirm-received')}
-                  disabled={!!busy}
-                >
-                  Confirmo que recibí el pago
-                </button>
-                <button
-                  className="btn btn-danger-ghost btn-block"
-                  onClick={() => act('dispute', '/dispute')}
-                  disabled={!!busy}
-                >
-                  Abrir disputa
-                </button>
-              </>
-            ) : (
-              <p className="ok center">Operación finalizada.</p>
-            )}
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="pay-card card">
-            <h3>Como comprador</h3>
-            {status === 'FROZEN' ? (
-              <>
-                <div className="pay-rows">
-                  <div>
-                    <span className="muted small">Pagar a</span>
-                    <b>{p.holder}</b>
-                  </div>
-                  <div>
-                    <span className="muted small">Cuenta</span>
-                    <b className="mono">{p.account || p.phone}</b>
-                  </div>
-                  <div>
-                    <span className="muted small">Método</span>
-                    <b>{p.method}</b>
+
+          {tls.cancelled && (
+            <div className="msg-sys ok">
+              <div className="bubble-sys">
+                <span className="mi">info</span>
+                <span>Operación cancelada. El USDT fue devuelto al vendedor.</span>
+              </div>
+            </div>
+          )}
+
+          {tls.dispute && (
+            <div className="msg-sys">
+              <div className="bubble-sys">
+                <span className="mi">warning</span>
+                <span>Disputa abierta. Un mediador de CambioYA revisará la operación.</span>
+              </div>
+            </div>
+          )}
+
+          {/* tarjeta de pago */}
+          {(status === 'FROZEN' || status === 'PENDING_CONFIRMATION') && (
+            <div className="pay-card">
+              <div className="pay-top">
+                <div>
+                  <span className="pay-label">Monto a pagar</span>
+                  <div className="pay-amount">{formatCUP(fiat)}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span className="pay-label">Tasa</span>
+                  <div className="pay-rate">{rate.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className="pay-box">
+                <div className="pay-bank">
+                  <span className="mi">account_balance</span>
+                  <span>{payment.method}</span>
+                </div>
+                <div>
+                  <span className="pay-field-label">Titular</span>
+                  <div className="pay-value">{payment.holder}</div>
+                </div>
+                <div>
+                  <span className="pay-field-label">Número de Tarjeta / Cuenta</span>
+                  <div className="pay-copy-row">
+                    <span className="pay-value">{payment.account}</span>
+                    <button className="copy-btn" onClick={copyAccount} aria-label="Copiar">
+                      <span className="mi">{copied ? 'check' : 'content_copy'}</span>
+                    </button>
                   </div>
                 </div>
-                <p className="muted small">
-                  Paga el total ({formatCUP(live ? live.deal.fiat_total : mockDeal.fiatTotal)}) y
-                  marca "Ya pagué" subiendo la captura.
+              </div>
+              <div className="pay-warning">
+                <span className="mi">warning</span>
+                <p>
+                  Por tu seguridad, asegúrate de que el nombre del titular coincida exactamente en tu aplicación
+                  bancaria antes de transferir.
                 </p>
-                <button className="btn btn-primary btn-block" onClick={() => fileRef.current?.click()}>
-                  Ya pagué: cargar comprobante
-                </button>
-                <button className="btn btn-danger-ghost btn-block" onClick={() => act('cancel', '/cancel')} disabled={!!busy}>
-                  Cancelar operación
-                </button>
-              </>
-            ) : status === 'PENDING_CONFIRMATION' ? (
-              <>
-                <p className="muted">Aguarda la confirmación del vendedor en su app del banco.</p>
-                {live &&
-                  live.proofs.length > 0 &&
-                  live.proofs.map((pr) => (
-                    <div className="sent-proof" key={pr.id}>
-                      <span className="proof-thumb" />
-                      <div>
-                        <b>Captura adjunta</b>
-                        <span className="muted small">{formatClock(pr.created_at)}</span>
-                      </div>
-                      <span className="pill pill-ok">EVIDENCIA</span>
-                    </div>
-                  ))}
-                <button className="btn btn-danger-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy}>
-                  El vendedor no confirma: abrir disputa
-                </button>
-              </>
-            ) : (
-              <p className="ok center">Operación finalizada.</p>
-            )}
+              </div>
+            </div>
+          )}
+
+          {/* chat */}
+          <div className="chat" style={{ margin: '0 -1rem' }}>
+            <div className="chat-day">
+              <span>Hoy</span>
+            </div>
+            {list.map(renderMsg)}
+            <div ref={endRef} />
+          </div>
+        </div>
+
+        {/* zona fija de acciones + mensajes */}
+        {(status === 'FROZEN' || status === 'PENDING_CONFIRMATION') && (
+          <div className="sala-fixed">
+            <form className="composer" onSubmit={send}>
+              <button type="button" className="attach-btn" onClick={() => fileRef.current?.click()} aria-label="Adjuntar">
+                +
+              </button>
+              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje…" />
+              <button type="submit" className="send-btn" disabled={!text.trim() || busy === 'send' || !demo && myUserId() == null}>
+                <span className="mi">send</span>
+              </button>
+              <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" ref={fileRef} hidden onChange={onFile} />
+            </form>
+
+            <div className="sala-actions">
+              {status === 'FROZEN' ? (
+                !isSeller ? (
+                  <>
+                    <button className="btn btn-primary btn-block" onClick={() => fileRef.current?.click()} disabled={!!busy && busy !== 'proof'}>
+                      <span className="mi">upload_file</span>
+                      <span>{busy === 'proof' ? 'Subiendo…' : 'Subir comprobante'}</span>
+                    </button>
+                    <button className="btn btn-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy}>
+                      <span>Problemas con el pago (Abrir disputa)</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="center txt-muted" style={{ fontSize: 14, margin: 0 }}>
+                      El comprador aún no paga. Cuando lo haga, verifica en <b>tu</b> app del banco; las capturas aquí son
+                      solo evidencia, no confirmación.
+                    </p>
+                    <button className="btn btn-ghost btn-block" disabled={!!busy} onClick={() => act('cancel', '/cancel')} style={{ color: 'var(--error)' }}>
+                      Cancelar operación
+                    </button>
+                  </>
+                )
+              ) : !isSeller ? (
+                <>
+                  <div className="btn btn-disabled-state btn-block">
+                    <span className="mi">check_circle</span>
+                    <span>Pago Realizado</span>
+                  </div>
+                  <p className="note-under">El vendedor tiene un tiempo límite para liberar los fondos.</p>
+                  <button className="btn btn-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy}>
+                    El vendedor no confirma (Abrir disputa)
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn btn-primary btn-block" onClick={() => act('release', '/confirm-received')} disabled={!!busy}>
+                    <span className="mi">verified</span>
+                    <span>{busy === 'release' ? 'Confirmando…' : 'Confirmo que recibí el pago'}</span>
+                  </button>
+                  <button className="btn btn-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy} style={{ color: 'var(--error)' }}>
+                    Abrir disputa
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
-      </div>
-
-      <div className="chat" ref={endRef}>
-        {list
-          .filter((m) => m.content || !demo)
-          .map((m) => {
-            const isSystem = m.sender_id == null || m.from === 'system';
-            const isMe = demo ? m.from === 'me' : live && m.sender_id === myUserId();
-            return (
-              <div key={m.id} className={`bubble ${isMe ? 'bubble-me' : ''} ${isSystem ? 'bubble-sys' : ''}`}>
-                {!isSystem && !isMe && <span className="bubble-name">{live && m.sender_name ? m.sender_name : 'Contraparte'}</span>}
-                {m.content && <p>{m.content}</p>}
-                {m.proof && (
-                  <div className="att">
-                    <span className="att-thumb" />
-                    <div>
-                      <b>{m.proof}</b>
-                      <span className="muted small">{m.proofMeta}</span>
-                    </div>
-                  </div>
-                )}
-                <span className="bubble-at">{formatClock(m.created_at) || m.at || ''}</span>
-              </div>
-            );
-          })}
-      </div>
-
-      <form className="composer" onSubmit={send}>
-        <button type="button" className="composer-attach" onClick={() => fileRef.current?.click()} title="Adjuntar captura">
-          +
-        </button>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje…" />
-        <button type="submit" className="composer-send" disabled={!text.trim() || !!busy}>
-          Enviar
-        </button>
-        <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" ref={fileRef} hidden onChange={onFile} />
-      </form>
-    </div>
+        {status === 'COMPLETED' && (
+          <div className="sala-fixed">
+            <div className="btn btn-disabled-state btn-block">
+              <span className="mi">task_alt</span>
+              <span>Operación completada</span>
+            </div>
+          </div>
+        )}
+      </main>
+      <BottomNav />
+    </>
   );
 }

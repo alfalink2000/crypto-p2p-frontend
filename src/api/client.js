@@ -52,14 +52,16 @@ export function mapAd(a) {
     min: Number(a.min_amount),
     rate: Number(a.rate),
     method: a.method,
+    methods: [a.method],
+    province: a.province,
+    handle: a.seller_nickname || null,
     seller: {
-      name: a.seller_nickname || a.seller_name,
-      city: a.seller_city || '',
+      name: [a.seller_name, a.seller_lastname].filter(Boolean).join(' ').trim() || a.seller_nickname,
+      city: a.seller_city || a.province || '',
       verified: !!a.seller_verified,
       trades: Number(a.seller_trades || 0),
       rating: Number(a.seller_rating || 0),
     },
     note: a.note || '',
-    minClearance: 0,
   };
 }

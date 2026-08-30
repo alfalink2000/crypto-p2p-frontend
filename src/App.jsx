@@ -6,10 +6,7 @@ import Market from './pages/Market.jsx';
 import AdDetail from './pages/AdDetail.jsx';
 import Sala from './pages/Sala.jsx';
 import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Withdraw from './pages/Withdraw.jsx';
-import Layout from './components/Layout.jsx';
+import Wallet from './pages/Wallet.jsx';
 
 function PrivateRoute({ children }) {
   const token = useSelector((s) => s.auth.token);
@@ -23,19 +20,9 @@ export default function App() {
       <Route path="/mercado" element={<Market />} />
       <Route path="/anuncio/:id" element={<AdDetail />} />
       <Route path="/sala/:dealId" element={<Sala />} />
+      <Route path="/billetera" element={<PrivateRoute><Wallet /></PrivateRoute>} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/cuenta"
-        element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="retirar" element={<Withdraw />} />
-      </Route>
+      <Route path="/register" element={<Login />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,40 +1,84 @@
-import { Link } from 'react-router-dom';
-import { formatUSDT, formatRate } from '../lib/format.js';
+import { useNavigate } from 'react-router-dom';
 
-export default function AdCard({ ad }) {
+function initials(name = '') {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+export default function AdCard({ ad, side }) {
+  const navigate = useNavigate();
   const buy = ad.side === 'BUY';
+  const go = () => navigate(`/anuncio/${ad.id}`);
+  const ctaLabel = buy ? 'Comprar USDT' : 'Vender USDT';
+
   return (
-    <Link to={`/anuncio/${ad.id}`} className={`adcard ${buy ? 'is-buy' : ''}`}>
-      <div className="adcard-top">
-        <span className={`pill ${buy ? 'pill-buy' : 'pill-sell'}`}>{buy ? 'COMPRO' : 'VENDO'}</span>
-        <div className="adcard-seller">
-          <span className="seller-name">
-            {ad.seller.name}
-            {ad.seller.verified && <span className="vcheck" title="Verificado">✓</span>}
-          </span>
-          <span className="seller-meta">
-            {ad.seller.city} · {ad.seller.trades} ops · ★ {ad.seller.rating}
-          </span>
+    <article className="offer-card" onClick={go}>
+      <div className="offer-grad" />
+      <div className="offer-top">
+        <div className="offer-seller">
+          <div className="avatar">
+            {ad.handle ? (
+              <span style={{ fontWeight: 600, color: 'var(--on-surface)' }}>{initials(ad.handle.replace('@', ''))}</span>
+            ) : (
+              <span className="mi">person</span>
+            )}
+            {ad.seller.verified && (
+              <span className="avatar-badge">
+                <span className="mi filled" style={{ fontSize: 14, color: 'var(--primary)' }}>
+                  verified
+                </span>
+              </span>
+            )}
+          </div>
+          <div>
+            <div className="offer-handle">@{ad.handle || ad.seller.name || 'usuario'}</div>
+            <div className="offer-rating">
+              <span className="mi">star</span>
+              <span>
+                {ad.seller.rating} ({ad.seller.trades})
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="offer-price">
+          <div className="offer-rate">{Number(ad.rate).toFixed(2)}</div>
+          <div className="offer-unit">CUP/USDT</div>
         </div>
       </div>
 
-      <div className="adcard-rate">
-        <strong>{formatRate(ad.rate)}</strong>
-        <span>por USDT</span>
+      <div className="offer-rule" />
+
+      <div className="offer-avail">
+        <div className="offer-avail-left">
+          <span className="offer-avail-label">Disponible</span>
+          <span className="offer-avail-val">
+            {ad.min} - {ad.amount} USDT
+          </span>
+        </div>
+        <span className="offer-prov">{ad.seller.city}</span>
       </div>
 
-      <div className="adcard-amount">
-        <span>
-          {formatUSDT(ad.amount)} <small className="muted">disponible</small>
-        </span>
-        <span className="muted small">mín {formatUSDT(ad.min)}</span>
+      <div className="offer-methods">
+        {(ad.methods || [ad.method]).map((m, i) => (
+          <span key={m} className={`mchip ${i === 0 ? 'primary' : 'plain'}`}>
+            {m}
+          </span>
+        ))}
       </div>
 
-      <div className="adcard-foot">
-        <span className="chip">{ad.method}</span>
-        {ad.note && <span className="muted small adcard-note">{ad.note}</span>}
-        <span className="adcard-go">→</span>
-      </div>
-    </Link>
+      <button
+        className={`btn btn-primary offer-cta ${buy ? '' : 'btn-danger'}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          go();
+        }}
+      >
+        {ctaLabel}
+      </button>
+    </article>
   );
 }

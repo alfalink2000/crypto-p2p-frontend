@@ -1,121 +1,98 @@
 import { Link } from 'react-router-dom';
-import TopNav from '../components/TopNav.jsx';
-import AdCard from '../components/AdCard.jsx';
-import { ads, marketStats } from '../data/mock.js';
-import { formatRate, formatUSDT } from '../lib/format.js';
-
-const STEPS = [
-  {
-    n: '01',
-    title: 'Elige a tu contraparte',
-    text: 'Filtra por ciudad, método de pago y reputación. Cada vendedor publica su propia tasa.',
-  },
-  {
-    n: '02',
-    title: 'Paga por tu vía habitual',
-    text: 'Transfermóvil, EnZona o efectivo. El USDT queda congelado en escrow: nadie corre.',
-  },
-  {
-    n: '03',
-    title: 'Confirma y recibes',
-    text: 'El vendedor confirma el pago en su app del banco y el USDT se libera a tu saldo.',
-  },
-];
-
-const SELLERS = ads.filter((a) => a.side === 'SELL').slice(0, 3);
+import TopBar from '../components/TopBar.jsx';
+import BottomNav from '../components/BottomNav.jsx';
+import { marketStats } from '../data/mock.js';
 
 export default function Home() {
   return (
-    <div className="page">
-      <TopNav />
-
-      <section className="hero">
-        <p className="hero-badge">Red de cambio P2P en Cuba · sin intermediarios</p>
-        <h1 className="hero-title">
-          Cambia USDT <span className="grad">sin sustos.</span>
-        </h1>
-        <p className="hero-sub">
-          Compra o vende dólar digital con gente real de tu ciudad. El dinero va en
-          <b> escrow</b> hasta que ambos confirman. Cero conejos.
-        </p>
-        <div className="hero-cta">
-          <Link to="/mercado?side=BUY" className="btn btn-primary">
-            Comprar USDT
-          </Link>
-          <Link to="/mercado?side=SELL" className="btn btn-ghost">
-            Vender USDT
-          </Link>
-        </div>
-        <div className="hero-stats">
-          <div>
-            <strong>{formatRate(marketStats.avgRate)}</strong>
-            <span>tasa promedio</span>
-          </div>
-          <div>
-            <strong>{marketStats.sellers}</strong>
-            <span>vendedores</span>
-          </div>
-          <div>
-            <strong>{formatUSDT(marketStats.volume24h)}</strong>
-            <span>volumen 24h</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="how">
-        <h2>Cómo funciona</h2>
-        <div className="steps">
-          {STEPS.map((s) => (
-            <div key={s.n} className="step">
-              <span className="step-n">{s.n}</span>
-              <h3>{s.title}</h3>
-              <p>{s.text}</p>
+    <>
+      <TopBar />
+      <main className="app-shell page">
+        <div className="flex flex-col gap-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <section className="hero">
+            <div className="hero-logo">
+              <span className="mi filled">currency_exchange</span>
             </div>
-          ))}
+            <h1 className="hero-title">
+              Cambia <span className="txt-primary">USDT</span> por <span className="txt-secondary">CUP</span>
+            </h1>
+            <p className="hero-sub">Seguro, rápido y sin vueltas. El mercado P2P hecho para nuestra gente.</p>
+            <Link to="/mercado" className="btn btn-primary hero-cta">
+              <span>Ver Mercado</span>
+              <span className="mi">arrow_forward</span>
+            </Link>
+          </section>
+
+          <section className="ticker">
+            <div className="ticker-glow" />
+            <div className="ticker-col">
+              <span className="ticker-label">Tasa Promedio</span>
+              <div className="ticker-value">
+                <span>{marketStats.avgRate.toFixed(2)}</span>
+                <span className="ticker-trend">
+                  <span className="mi">trending_up</span> 1.2%
+                </span>
+              </div>
+            </div>
+            <div className="ticker-col right">
+              <span className="ticker-label">Vol 24h</span>
+              <span className="ticker-value" style={{ fontSize: 20 }}>
+                {marketStats.volume24h.toLocaleString('de-DE')} USDT
+              </span>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="section-title">¿Cómo funciona?</h2>
+            <div className="bento">
+              <div className="bento-item">
+                <div className="bento-num">01</div>
+                <div className="bento-body">
+                  <h3 className="bento-title">Elige un anuncio</h3>
+                  <p className="bento-text">Busca la mejor tasa. Fíjate en la reputación del vendedor y los bancos que acepta.</p>
+                </div>
+                <span className="mi bento-ico">search</span>
+              </div>
+              <div className="bento-item">
+                <div className="bento-num">02</div>
+                <div className="bento-body">
+                  <h3 className="bento-title">Paga en tu banco</h3>
+                  <p className="bento-text">Transfiere los CUP directamente a la cuenta del vendedor. Los USDT están bloqueados y seguros.</p>
+                </div>
+                <span className="mi bento-ico">account_balance</span>
+              </div>
+              <div className="bento-item">
+                <div className="bento-num">03</div>
+                <div className="bento-body">
+                  <h3 className="bento-title">Confirma y recibe</h3>
+                  <p className="bento-text">Marca como pagado. Una vez el vendedor confirme, los USDT caen directo a tu billetera.</p>
+                </div>
+                <span className="mi bento-ico">done_all</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="trust-grid">
+            <div className="trust-card">
+              <span className="mi filled" style={{ color: 'var(--primary)' }}>lock</span>
+              <span>
+                Escrow
+                <br />
+                Seguro
+              </span>
+            </div>
+            <div className="trust-card">
+              <span className="mi filled" style={{ color: 'var(--secondary)' }}>verified_user</span>
+              <span>
+                Verificado por
+                <br />
+                la comunidad
+              </span>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <section className="feature">
-        <div className="feature-card">
-          <h3>Escrow real, no compra a ciegas</h3>
-          <p>
-            Al iniciar una operación, el USDT del vendedor se bloquea en la plataforma. Tú pagas,
-            él confirma, y solo entonces se libera. El respaldo corre por cuenta de la operación.
-          </p>
-          <ul>
-            <li>Reputación verificada con operaciones reales</li>
-            <li>Tasa fijada por cada vendedor, sin sorpresas</li>
-            <li>Disputas resueltas por soporte con evidencias</li>
-          </ul>
-        </div>
-      </section>
-
-      <section className="offers">
-        <h2>Ofertas destacadas</h2>
-        <div className="offer-list">
-          {SELLERS.map((a) => (
-            <AdCard key={a.id} ad={a} />
-          ))}
-        </div>
-        <Link to="/mercado" className="btn btn-ghost btn-block">
-          Ver todo el mercado
-        </Link>
-      </section>
-
-      <section className="cta-final">
-        <h2>Únete gratis</h2>
-        <p>Crea tu cuenta, publica tu tasa y empieza a operar en minutos.</p>
-        <Link to="/register" className="btn btn-primary btn-block">
-          Crear mi cuenta
-        </Link>
-      </section>
-
-      <footer className="foot">
-        <p className="muted small">
-          CambioYA no es un banco ni entidad autorizada. Opere bajo tu responsabilidad y dentro del
-          marco legal vigente en Cuba.
-        </p>
-      </footer>
-    </div>
+      </main>
+      <BottomNav />
+    </>
   );
 }
