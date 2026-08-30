@@ -14,6 +14,7 @@ const TABS = [
   { id: 'deposits', label: 'Depósitos', icon: 'download' },
   { id: 'withdrawals', label: 'Retiros', icon: 'upload' },
   { id: 'disputes', label: 'Disputas', icon: 'warning' },
+  { id: 'settings', label: 'Ajustes', icon: 'settings' },
 ];
 
 function Stat({ label, value, sub, icon, accent }) {
@@ -368,6 +369,111 @@ function Disputes({ deals, reports, refresh }) {
   );
 }
 
+function Settings() {
+  const [mkt, setMkt] = useState(null);
+  const [val, setVal] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api
+      .get('/market/stats')
+      .then((r) => {
+        setMkt(r);
+        setVal(r.referenceRate ? String(r.referenceRate) : '');
+      })
+      .catch(() => {});
+  }, []);
+
+  const save = async () => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const r = await api.put('/admin/settings/reference-rate', { rate: Number(val) });
+      setMkt((m) => ({ ...m, referenceRate: Number(r.referenceRate), rateSource: r.rateSource }));
+      setVal(String(r.referenceRate));
+      setMsg('Tasa guardada. Ya se muestra en Inicio y Billetera.');
+    } catch (e) {
+      setMsg(e.message);
+    }
+    setBusy(false);
+  };
+
+  const clear = async () => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const r = await api.put('/admin/settings/reference-rate', { rate: null });
+      setVal('');
+      setMkt((m) => ({ ...m, referenceRate: Number(r.referenceRate), rateSource: r.rateSource }));
+      setMsg('Restablecido: ahora se usa la tasa promedio del mercado.');
+    } catch (e) {
+      setMsg(e.message);
+    }
+    setBusy(false);
+  };
+
+  const eff = mkt?.referenceRate ? Number(mkt.referenceRate) : null;
+  const sourceLabel =
+    mkt?.rateSource === 'admin' ? 'Fijada por el admin' : mkt?.rateSource === 'market' ? 'Mercado (promedio de anuncios)' : 'Sin definir';
+
+  return (
+    <div className="wallet-stack">
+      <div className="dep-card">
+        <div className="dep-head">
+          <Icon name="tune" />
+          <span className="dep-net">Tasa de referencia (USDT → CUP)</span>
+        </div>
+
+        <div className="settings-rows">
+          <div className="settings-row">
+            <span>Tasa activa</span>
+            <span className="mono settings-val">{eff != null ? `${eff.toFixed(2)} CUP` : '—'}</span>
+          </div>
+          <div className="settings-row">
+            <span>Origen</span>
+            <span>{sourceLabel}</span>
+          </div>
+          <div className="settings-row">
+            <span>Promedio del mercado</span>
+            <span className="mono">{mkt && Number(mkt.avgRate) > 0 ? `${Number(mkt.avgRate).toFixed(2)} CUP` : '—'}</span>
+          </div>
+        </div>
+
+        <div className="field" style={{ marginTop: '0.75rem' }}>
+          <span className="field-label">Nueva tasa (CUP por USDT)</span>
+          <div className="input-wrap">
+            <input
+              type="number"
+              step="any"
+              inputMode="decimal"
+              placeholder="ej. 355.00"
+              value={val}
+              onChange={(e) => setVal(e.target.value)}
+            />
+            <button className="max-btn" type="button" onClick={save} disabled={busy || !(Number(val) > 0)}>
+              GUARDAR
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-actions">
+          <button className="copy-btn" type="button" onClick={clear} disabled={busy}>
+            <Icon name="history" /> Restablecer a tasa de mercado
+          </button>
+        </div>
+
+        {msg && <p className="settings-msg">{msg}</p>}
+      </div>
+
+      <p className="w-note">
+        La tasa de referencia es la que se muestra en Inicio y en la Billetera. Cada anuncio de compra/venta mantiene su
+        propia tasa fijada por el vendedor.
+      </p>
+    </div>
+  );
+}
+
 export default function Admin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -433,6 +539,7 @@ export default function Admin() {
         {tab === 'deposits' && <Deposits deposits={deposits} />}
         {tab === 'withdrawals' && <Withdrawals withdrawals={withdrawals} refresh={load} />}
         {tab === 'disputes' && <Disputes deals={deals} reports={reports} refresh={load} />}
+        {tab === 'settings' && <Settings />}
       </main>
     </>
   );

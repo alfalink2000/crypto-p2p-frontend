@@ -7,14 +7,19 @@ import { api, getToken } from '../api/client.js';
 import { formatCUP, formatUSDT, timeAgo } from '../lib/format.js';
 import useBalance from '../lib/useBalance.js';
 
+import usdtIcon from '../assets/tokens/usdt.png';
+import tronIcon from '../assets/tokens/tron.png';
+import bnbIcon from '../assets/tokens/bnb.png';
+
 import Icon from '../components/Icon.jsx';
 
 const NETWORKS = [
-  { id: 'tron', label: 'Tron (TRC20)', short: 'TRX', dot: 'trx', asset: 'USDT' },
-  { id: 'bsc', label: 'BSC (BEP20)', short: 'BSC', dot: 'bsc', asset: 'USDT' },
+  { id: 'tron', label: 'USDT (TRC20)', short: 'TRX', asset: 'USDT' },
+  { id: 'bsc', label: 'USDT (BEP20)', short: 'BSC', asset: 'USDT' },
 ];
 
-const WALLET_NET = { tron: 'TRON (TRC20)', bsc: 'BSC (BEP20)' };
+const WALLET_NET = { tron: 'USDT (TRC20)', bsc: 'USDT (BEP20)' };
+const NET_ICON = { tron: tronIcon, bsc: bnbIcon };
 
 const DEP_STATUS = { pending: 'Pendiente', confirmed: 'Confirmado', failed: 'Fallido' };
 const WDR_STATUS = { pending: 'Pendiente', processing: 'Procesando', completed: 'Completado', failed: 'Fallido', refunded: 'Reembolsado' };
@@ -69,6 +74,7 @@ function Resumen({ usdt, usdtLocked, rate }) {
           </span>
         </div>
         <div className="w-balance">
+          <img className="token-ic lg" src={usdtIcon} alt="USDT" />
           {Number(usdt?.available || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
           <span className="unit">USDT</span>
         </div>
@@ -80,7 +86,7 @@ function Resumen({ usdt, usdtLocked, rate }) {
         ) : (
           <div className="w-equiv">
             <Icon name="swap_horiz" />
-            <span>tasa de referencia cargando…</span>
+            <span>Sin tasa de referencia</span>
           </div>
         )}
         {Number(usdtLocked) > 0 && (
@@ -115,14 +121,24 @@ function Depositar({ wallets, deposits }) {
   return (
     <div className="wallet-stack">
       <p className="w-note">
-        Envía <b>USDT</b> a una de estas direcciones de tu billetera custodial. El depósito se acredita automáticamente
-        tras las confirmaciones de la red.
+        Puedes depositar{' '}
+        <b>
+          <img className="token-ic" src={usdtIcon} alt="" /> USDT-TRC20
+        </b>{' '}
+        (red TRON) o{' '}
+        <b>
+          <img className="token-ic" src={usdtIcon} alt="" /> USDT-BEP20
+        </b>{' '}
+        (red BNB Smart Chain). Elige la dirección de la red correspondiente y envía solo ese activo.
       </p>
 
       {wallets.map((w, i) => (
         <div key={`${w.network}-${i}`} className="dep-card">
           <div className="dep-head">
-            <span className="dep-net">{WALLET_NET[w.network] || w.network}</span>
+            <img className="token-ic net" src={NET_ICON[w.network]} alt={w.network} />
+            <span className="dep-net">
+              <img className="token-ic" src={usdtIcon} alt="" /> {WALLET_NET[w.network] || w.network}
+            </span>
             <span className="dep-asset mono">{w.asset || 'USDT'}</span>
           </div>
           <div className="dep-body">
@@ -139,8 +155,9 @@ function Depositar({ wallets, deposits }) {
             </div>
           </div>
           <p className="dep-warn">
-            <Icon name="warning" /> Envía solo el activo y red indicados ({w.network.toUpperCase()}). Otras redes o
-            activos pueden perderse.
+            <Icon name="warning" /> Envía solo{' '}
+            <img className="token-ic" src={usdtIcon} alt="" /> {WALLET_NET[w.network] || w.network} a esta dirección. Enviar
+            otra red o activo (BNB, TRX, USDT por otra vía) puede perderse.
           </p>
         </div>
       ))}
@@ -237,7 +254,7 @@ function Retirar({ usdt, balanceRefresh }) {
                   onClick={() => setNetwork(n.id)}
                 >
                   <span className="trx-dot">
-                    <span>{n.short}</span>
+                    <img className="token-ic net" src={NET_ICON[n.id]} alt={n.id} />
                   </span>
                   <span>{n.label}</span>
                 </button>
@@ -380,7 +397,7 @@ export default function Wallet() {
       .catch(() => {});
     api
       .get('/market/stats')
-      .then((res) => Number(res.avgRate) > 0 && setRate(Number(res.avgRate)))
+      .then((res) => Number(res.referenceRate) > 0 && setRate(Number(res.referenceRate)))
       .catch(() => {});
   }, []);
 

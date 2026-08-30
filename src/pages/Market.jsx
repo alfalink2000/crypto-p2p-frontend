@@ -4,7 +4,7 @@ import TopBar from '../components/TopBar.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import AdCard from '../components/AdCard.jsx';
 import { api, mapAd } from '../api/client.js';
-import { ads as mockAds, marketStats, methodChips } from '../data/mock.js';
+import { ads as mockAds, methodChips } from '../data/mock.js';
 
 import Icon from '../components/Icon.jsx';
 
@@ -16,6 +16,18 @@ export default function Market() {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  const [mstats, setMstats] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .get('/market/stats')
+      .then((res) => alive && setMstats(res))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -84,13 +96,14 @@ export default function Market() {
 
         <div className="stats-bar">
           <div className="stats-avg">
-            <span className="stats-label">Promedio de compra (24h)</span>
+            <span className="stats-label">Tasa de referencia</span>
             <span className="stats-val">
-              {marketStats.avgRate.toFixed(2)} <small>CUP</small>
+              {mstats && Number(mstats.referenceRate) > 0 ? Number(mstats.referenceRate).toFixed(2) : '—'}{' '}
+              <small>CUP</small>
             </span>
           </div>
           <span className="stats-trend">
-            <Icon name="trending_up" /> +1.2%
+            <Icon name="trending_up" /> {mstats?.rateSource === 'admin' ? 'oficial' : 'mercado'}
           </span>
         </div>
 

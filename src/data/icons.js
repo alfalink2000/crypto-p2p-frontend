@@ -155,6 +155,10 @@ import _content_paste from '@material-symbols/svg-400/outlined/content_paste.svg
 import _content_paste_fill from '@material-symbols/svg-400/outlined/content_paste-fill.svg?raw';
 import _group from '@material-symbols/svg-400/outlined/group.svg?raw';
 import _group_fill from '@material-symbols/svg-400/outlined/group-fill.svg?raw';
+import _settings from '@material-symbols/svg-400/outlined/settings.svg?raw';
+import _settings_fill from '@material-symbols/svg-400/outlined/settings-fill.svg?raw';
+import _save from '@material-symbols/svg-400/outlined/save.svg?raw';
+import _save_fill from '@material-symbols/svg-400/outlined/save-fill.svg?raw';
 
 const paths = (raw) => (raw.match(/<path d="[^"]*"/g) || []).map((m) => m.slice(9, -1));
 
@@ -315,4 +319,8 @@ export const iconPaths = {
   'content_paste-fill': paths(_content_paste_fill),
   'group': paths(_group),
   'group-fill': paths(_group_fill),
+  'settings': paths(_settings),
+  'settings-fill': paths(_settings_fill),
+  'save': paths(_save),
+  'save-fill': paths(_save_fill),
 };

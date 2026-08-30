@@ -3480,3 +3480,96 @@ a.back-top {
 .adm-dispute {
   margin-bottom: 0.75rem;
 }
+
+/* ================================================================
+   TOKEN ICONS (USDT / TRON / BNB)
+   ================================================================ */
+.token-ic {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: -4px;
+  margin-right: 3px;
+}
+
+.token-ic.lg {
+  width: 26px;
+  height: 26px;
+  vertical-align: -6px;
+  margin-right: 6px;
+}
+
+.dep-head .token-ic.net {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.dep-net .token-ic {
+  vertical-align: -4px;
+  margin-right: 4px;
+}
+
+.dep-warn .token-ic {
+  vertical-align: -3px;
+  margin-left: 2px;
+}
+
+.w-note .token-ic {
+  vertical-align: -3px;
+}
+
+/* ================================================================
+   AJUSTES ADMIN (tasa de referencia)
+   ================================================================ */
+.settings-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-low);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--outline-variant);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 14px;
+}
+
+.settings-row > span:first-child {
+  color: var(--on-surface-variant);
+}
+
+.settings-val {
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.settings-actions .copy-btn {
+  padding: 0.5rem 0.75rem;
+  height: auto;
+  gap: 0.3rem;
+  color: var(--primary);
+  background: rgba(63, 229, 108, 0.1);
+}
+
+.settings-msg {
+  font-size: 12px;
+  color: var(--primary);
+  margin-top: 0.6rem;
+}

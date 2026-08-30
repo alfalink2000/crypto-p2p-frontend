@@ -16,6 +16,7 @@ export default function Home() {
       .then((res) => {
         if (!alive) return;
         setStats({
+          referenceRate: Number(res.referenceRate) > 0 ? Number(res.referenceRate) : null,
           avgRate: Number(res.avgRate) > 0 ? Number(res.avgRate) : null,
           volume24h: Number(res.volume24h) > 0 ? Number(res.volume24h) : null,
         });
@@ -48,11 +49,11 @@ export default function Home() {
           <section className="ticker">
             <div className="ticker-glow" />
             <div className="ticker-col">
-              <span className="ticker-label">Tasa Promedio</span>
+              <span className="ticker-label">Tasa de referencia</span>
               <div className="ticker-value">
-                <span>{stats?.avgRate != null ? stats.avgRate.toFixed(2) : '—'}</span>
+                <span>{stats?.referenceRate != null ? stats.referenceRate.toFixed(2) : '—'} <small style={{fontSize:12}}>CUP</small></span>
                 <span className="ticker-trend">
-                  <Icon name="trending_up" /> promedio
+                  <Icon name="trending_up" /> USDT → CUP
                 </span>
               </div>
             </div>
