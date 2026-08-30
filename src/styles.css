@@ -109,12 +109,19 @@ a {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  -webkit-font-feature-settings: 'liga' 1;
+  font-feature-settings: 'liga' 1;
+  font-variant-ligatures: common-ligatures;
   -webkit-font-smoothing: antialiased;
   user-select: none;
 }
 
+/* Las variaciones de eje solo se aplican en la variante .filled;
+   en la base se usan los ejes por defecto para no romper las
+   ligaduras en WebViews de Android */
 .mi.filled {
+  -webkit-font-feature-settings: 'liga' 1;
+  font-feature-settings: 'liga' 1;
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
