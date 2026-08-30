@@ -5,7 +5,6 @@ import TopBar from '../components/TopBar.jsx';
 import { api } from '../api/client.js';
 import { logout } from '../store/slices/authSlice.js';
 import { formatCUP, timeAgo, formatClock } from '../lib/format.js';
-import { formatUSDT } from '../lib/format.js';
 
 import Icon from '../components/Icon.jsx';
 
