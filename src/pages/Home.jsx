@@ -1,11 +1,31 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar.jsx';
 import BottomNav from '../components/BottomNav.jsx';
-import { marketStats } from '../data/mock.js';
+import { api } from '../api/client.js';
 
 import Icon from '../components/Icon.jsx';
 
 export default function Home() {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .get('/market/stats')
+      .then((res) => {
+        if (!alive) return;
+        setStats({
+          avgRate: Number(res.avgRate) > 0 ? Number(res.avgRate) : null,
+          volume24h: Number(res.volume24h) > 0 ? Number(res.volume24h) : null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <>
       <TopBar />
@@ -30,16 +50,16 @@ export default function Home() {
             <div className="ticker-col">
               <span className="ticker-label">Tasa Promedio</span>
               <div className="ticker-value">
-                <span>{marketStats.avgRate.toFixed(2)}</span>
+                <span>{stats?.avgRate != null ? stats.avgRate.toFixed(2) : '—'}</span>
                 <span className="ticker-trend">
-                  <Icon name="trending_up" /> 1.2%
+                  <Icon name="trending_up" /> promedio
                 </span>
               </div>
             </div>
             <div className="ticker-col right">
               <span className="ticker-label">Vol 24h</span>
               <span className="ticker-value" style={{ fontSize: 20 }}>
-                {marketStats.volume24h.toLocaleString('de-DE')} USDT
+                {stats?.volume24h != null ? `${stats.volume24h.toLocaleString('de-DE')} USDT` : '—'}
               </span>
             </div>
           </section>

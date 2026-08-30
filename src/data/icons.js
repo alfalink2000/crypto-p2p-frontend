@@ -91,6 +91,68 @@ import _visibility_off from '@material-symbols/svg-400/outlined/visibility_off.s
 import _visibility_off_fill from '@material-symbols/svg-400/outlined/visibility_off-fill.svg?raw';
 import _warning from '@material-symbols/svg-400/outlined/warning.svg?raw';
 import _warning_fill from '@material-symbols/svg-400/outlined/warning-fill.svg?raw';
+import _add from '@material-symbols/svg-400/outlined/add.svg?raw';
+import _add_fill from '@material-symbols/svg-400/outlined/add-fill.svg?raw';
+import _admin_panel_settings from '@material-symbols/svg-400/outlined/admin_panel_settings.svg?raw';
+import _admin_panel_settings_fill from '@material-symbols/svg-400/outlined/admin_panel_settings-fill.svg?raw';
+import _apps from '@material-symbols/svg-400/outlined/apps.svg?raw';
+import _apps_fill from '@material-symbols/svg-400/outlined/apps-fill.svg?raw';
+import _block from '@material-symbols/svg-400/outlined/block.svg?raw';
+import _block_fill from '@material-symbols/svg-400/outlined/block-fill.svg?raw';
+import _calendar_today from '@material-symbols/svg-400/outlined/calendar_today.svg?raw';
+import _calendar_today_fill from '@material-symbols/svg-400/outlined/calendar_today-fill.svg?raw';
+import _download from '@material-symbols/svg-400/outlined/download.svg?raw';
+import _download_fill from '@material-symbols/svg-400/outlined/download-fill.svg?raw';
+import _download_done from '@material-symbols/svg-400/outlined/download_done.svg?raw';
+import _download_done_fill from '@material-symbols/svg-400/outlined/download_done-fill.svg?raw';
+import _filter_list from '@material-symbols/svg-400/outlined/filter_list.svg?raw';
+import _filter_list_fill from '@material-symbols/svg-400/outlined/filter_list-fill.svg?raw';
+import _groups from '@material-symbols/svg-400/outlined/groups.svg?raw';
+import _groups_fill from '@material-symbols/svg-400/outlined/groups-fill.svg?raw';
+import _history from '@material-symbols/svg-400/outlined/history.svg?raw';
+import _history_fill from '@material-symbols/svg-400/outlined/history-fill.svg?raw';
+import _key from '@material-symbols/svg-400/outlined/key.svg?raw';
+import _key_fill from '@material-symbols/svg-400/outlined/key-fill.svg?raw';
+import _login from '@material-symbols/svg-400/outlined/login.svg?raw';
+import _login_fill from '@material-symbols/svg-400/outlined/login-fill.svg?raw';
+import _manage_accounts from '@material-symbols/svg-400/outlined/manage_accounts.svg?raw';
+import _manage_accounts_fill from '@material-symbols/svg-400/outlined/manage_accounts-fill.svg?raw';
+import _more_vert from '@material-symbols/svg-400/outlined/more_vert.svg?raw';
+import _more_vert_fill from '@material-symbols/svg-400/outlined/more_vert-fill.svg?raw';
+import _payments from '@material-symbols/svg-400/outlined/payments.svg?raw';
+import _payments_fill from '@material-symbols/svg-400/outlined/payments-fill.svg?raw';
+import _person_search from '@material-symbols/svg-400/outlined/person_search.svg?raw';
+import _person_search_fill from '@material-symbols/svg-400/outlined/person_search-fill.svg?raw';
+import _playlist_add_check from '@material-symbols/svg-400/outlined/playlist_add_check.svg?raw';
+import _playlist_add_check_fill from '@material-symbols/svg-400/outlined/playlist_add_check-fill.svg?raw';
+import _qr_code from '@material-symbols/svg-400/outlined/qr_code.svg?raw';
+import _qr_code_fill from '@material-symbols/svg-400/outlined/qr_code-fill.svg?raw';
+import _remove from '@material-symbols/svg-400/outlined/remove.svg?raw';
+import _remove_fill from '@material-symbols/svg-400/outlined/remove-fill.svg?raw';
+import _security from '@material-symbols/svg-400/outlined/security.svg?raw';
+import _security_fill from '@material-symbols/svg-400/outlined/security-fill.svg?raw';
+import _shield from '@material-symbols/svg-400/outlined/shield.svg?raw';
+import _shield_fill from '@material-symbols/svg-400/outlined/shield-fill.svg?raw';
+import _storefront from '@material-symbols/svg-400/outlined/storefront.svg?raw';
+import _storefront_fill from '@material-symbols/svg-400/outlined/storefront-fill.svg?raw';
+import _supervisor_account from '@material-symbols/svg-400/outlined/supervisor_account.svg?raw';
+import _supervisor_account_fill from '@material-symbols/svg-400/outlined/supervisor_account-fill.svg?raw';
+import _support_agent from '@material-symbols/svg-400/outlined/support_agent.svg?raw';
+import _support_agent_fill from '@material-symbols/svg-400/outlined/support_agent-fill.svg?raw';
+import _swap_horizontal_circle from '@material-symbols/svg-400/outlined/swap_horizontal_circle.svg?raw';
+import _swap_horizontal_circle_fill from '@material-symbols/svg-400/outlined/swap_horizontal_circle-fill.svg?raw';
+import _tune from '@material-symbols/svg-400/outlined/tune.svg?raw';
+import _tune_fill from '@material-symbols/svg-400/outlined/tune-fill.svg?raw';
+import _upload from '@material-symbols/svg-400/outlined/upload.svg?raw';
+import _upload_fill from '@material-symbols/svg-400/outlined/upload-fill.svg?raw';
+import _chevron_right from '@material-symbols/svg-400/outlined/chevron_right.svg?raw';
+import _chevron_right_fill from '@material-symbols/svg-400/outlined/chevron_right-fill.svg?raw';
+import _error from '@material-symbols/svg-400/outlined/error.svg?raw';
+import _error_fill from '@material-symbols/svg-400/outlined/error-fill.svg?raw';
+import _hourglass_empty from '@material-symbols/svg-400/outlined/hourglass_empty.svg?raw';
+import _hourglass_empty_fill from '@material-symbols/svg-400/outlined/hourglass_empty-fill.svg?raw';
+import _content_paste from '@material-symbols/svg-400/outlined/content_paste.svg?raw';
+import _content_paste_fill from '@material-symbols/svg-400/outlined/content_paste-fill.svg?raw';
 
 const paths = (raw) => (raw.match(/<path d="[^"]*"/g) || []).map((m) => m.slice(9, -1));
 
@@ -187,4 +249,66 @@ export const iconPaths = {
   'visibility_off-fill': paths(_visibility_off_fill),
   'warning': paths(_warning),
   'warning-fill': paths(_warning_fill),
+  'add': paths(_add),
+  'add-fill': paths(_add_fill),
+  'admin_panel_settings': paths(_admin_panel_settings),
+  'admin_panel_settings-fill': paths(_admin_panel_settings_fill),
+  'apps': paths(_apps),
+  'apps-fill': paths(_apps_fill),
+  'block': paths(_block),
+  'block-fill': paths(_block_fill),
+  'calendar_today': paths(_calendar_today),
+  'calendar_today-fill': paths(_calendar_today_fill),
+  'download': paths(_download),
+  'download-fill': paths(_download_fill),
+  'download_done': paths(_download_done),
+  'download_done-fill': paths(_download_done_fill),
+  'filter_list': paths(_filter_list),
+  'filter_list-fill': paths(_filter_list_fill),
+  'groups': paths(_groups),
+  'groups-fill': paths(_groups_fill),
+  'history': paths(_history),
+  'history-fill': paths(_history_fill),
+  'key': paths(_key),
+  'key-fill': paths(_key_fill),
+  'login': paths(_login),
+  'login-fill': paths(_login_fill),
+  'manage_accounts': paths(_manage_accounts),
+  'manage_accounts-fill': paths(_manage_accounts_fill),
+  'more_vert': paths(_more_vert),
+  'more_vert-fill': paths(_more_vert_fill),
+  'payments': paths(_payments),
+  'payments-fill': paths(_payments_fill),
+  'person_search': paths(_person_search),
+  'person_search-fill': paths(_person_search_fill),
+  'playlist_add_check': paths(_playlist_add_check),
+  'playlist_add_check-fill': paths(_playlist_add_check_fill),
+  'qr_code': paths(_qr_code),
+  'qr_code-fill': paths(_qr_code_fill),
+  'remove': paths(_remove),
+  'remove-fill': paths(_remove_fill),
+  'security': paths(_security),
+  'security-fill': paths(_security_fill),
+  'shield': paths(_shield),
+  'shield-fill': paths(_shield_fill),
+  'storefront': paths(_storefront),
+  'storefront-fill': paths(_storefront_fill),
+  'supervisor_account': paths(_supervisor_account),
+  'supervisor_account-fill': paths(_supervisor_account_fill),
+  'support_agent': paths(_support_agent),
+  'support_agent-fill': paths(_support_agent_fill),
+  'swap_horizontal_circle': paths(_swap_horizontal_circle),
+  'swap_horizontal_circle-fill': paths(_swap_horizontal_circle_fill),
+  'tune': paths(_tune),
+  'tune-fill': paths(_tune_fill),
+  'upload': paths(_upload),
+  'upload-fill': paths(_upload_fill),
+  'chevron_right': paths(_chevron_right),
+  'chevron_right-fill': paths(_chevron_right_fill),
+  'error': paths(_error),
+  'error-fill': paths(_error_fill),
+  'hourglass_empty': paths(_hourglass_empty),
+  'hourglass_empty-fill': paths(_hourglass_empty_fill),
+  'content_paste': paths(_content_paste),
+  'content_paste-fill': paths(_content_paste_fill),
 };

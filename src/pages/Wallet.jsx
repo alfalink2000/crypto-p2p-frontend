@@ -1,166 +1,413 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import TopBar from '../components/TopBar.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import { api, getToken } from '../api/client.js';
-import { walletDemo } from '../data/mock.js';
-import { formatCUP } from '../lib/format.js';
+import { formatCUP, formatUSDT, timeAgo } from '../lib/format.js';
+import useBalance from '../lib/useBalance.js';
 
 import Icon from '../components/Icon.jsx';
 
-export default function Wallet() {
+const NETWORKS = [
+  { id: 'tron', label: 'Tron (TRC20)', short: 'TRX', dot: 'trx', asset: 'USDT' },
+  { id: 'bsc', label: 'BSC (BEP20)', short: 'BSC', dot: 'bsc', asset: 'USDT' },
+];
+
+const WALLET_NET = { tron: 'TRON (TRC20)', bsc: 'BSC (BEP20)' };
+
+const DEP_STATUS = { pending: 'Pendiente', confirmed: 'Confirmado', failed: 'Fallido' };
+const WDR_STATUS = { pending: 'Pendiente', processing: 'Procesando', completed: 'Completado', failed: 'Fallido', refunded: 'Reembolsado' };
+
+function statusChip(status) {
+  if (['confirmed', 'completed'].includes(status)) return { label: DEP_STATUS[status] || WDR_STATUS[status], ok: true };
+  if (status === 'pending' || status === 'processing') return { label: WDR_STATUS[status] || DEP_STATUS[status], pend: true };
+  return { label: (DEP_STATUS[status] || WDR_STATUS[status] || status).toLowerCase(), fail: true };
+}
+
+function CopyBtn({ text, size = 18 }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* sin permiso de portapapeles */
+    }
+  };
+  return (
+    <button className="copy-btn" onClick={copy} aria-label="Copiar" title="Copiar">
+      <Icon name={copied ? 'check' : 'content_copy'} />
+    </button>
+  );
+}
+
+// ---- pestañas ----
+
+function Resumen({ usdt, usdtLocked, rate }) {
   const navigate = useNavigate();
-  const [bal, setBal] = useState(walletDemo.balance);
-  const [eq, setEq] = useState(walletDemo.equivalent);
-  const [monto, setMonto] = useState('');
-  const [busy, setBusy] = useState('');
+  const eq = rate > 0 ? (Number(usdt?.available || 0)) * rate : null;
+  return (
+    <div className="wallet-stack">
+      <div className="w-card">
+        <div className="w-glow" />
+        <div className="w-head">
+          <span className="w-label">Saldo Disponible</span>
+          <span className="verified-chip">
+            <Icon name="verified_user" filled />
+            <span>Escrow</span>
+          </span>
+        </div>
+        <div className="w-balance">
+          {Number(usdt?.available || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+          <span className="unit">USDT</span>
+        </div>
+        {eq != null ? (
+          <div className="w-equiv">
+            <Icon name="swap_horiz" />
+            <span>≈ {formatCUP(eq)}</span>
+          </div>
+        ) : (
+          <div className="w-equiv">
+            <Icon name="swap_horiz" />
+            <span>tasa de referencia cargando…</span>
+          </div>
+        )}
+        {Number(usdtLocked) > 0 && (
+          <div className="w-locked">
+            <Icon name="lock" filled />
+            <span>
+              {Number(usdtLocked).toLocaleString('de-DE', { maximumFractionDigits: 6 })} USDT en escrow (operaciones en curso)
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="w-actions actions-3">
+        <button className="w-btn join" onClick={() => navigate('/billetera?tab=depositar')}>
+          <Icon name="qr_code" />
+          Ingresar
+        </button>
+        <button className="w-btn ghost" onClick={() => navigate('/billetera?tab=retirar')}>
+          <Icon name="upload" />
+          Retirar
+        </button>
+        <button className="w-btn sell" onClick={() => navigate('/mercado?side=SELL')}>
+          <Icon name="sell" />
+          Vender
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Depositar({ wallets, deposits }) {
+  return (
+    <div className="wallet-stack">
+      <p className="w-note">
+        Envía <b>USDT</b> a una de estas direcciones de tu billetera custodial. El depósito se acredita automáticamente
+        tras las confirmaciones de la red.
+      </p>
+
+      {wallets.map((w, i) => (
+        <div key={`${w.network}-${i}`} className="dep-card">
+          <div className="dep-head">
+            <span className="dep-net">{WALLET_NET[w.network] || w.network}</span>
+            <span className="dep-asset mono">{w.asset || 'USDT'}</span>
+          </div>
+          <div className="dep-body">
+            <div className="dep-qr">
+              <QRCodeSVG value={w.address} size={108} bgColor="transparent" fgColor="#e2e2e9" level="M" />
+            </div>
+            <div className="dep-addr-wrap">
+              <div className="field-label">Dirección de depósito</div>
+              <div className="dep-addr mono">{w.address}</div>
+              <div className="dep-copy">
+                <CopyBtn text={w.address} size={16} />
+                <span className="copied-hint">Copia la dirección</span>
+              </div>
+            </div>
+          </div>
+          <p className="dep-warn">
+            <Icon name="warning" /> Envía solo el activo y red indicados ({w.network.toUpperCase()}). Otras redes o
+            activos pueden perderse.
+          </p>
+        </div>
+      ))}
+
+      {wallets.length === 0 && <p className="empty">Generando direcciones…</p>}
+
+      {deposits.length > 0 && (
+        <div className="activity">
+          <div className="act-head">
+            <h3 className="act-title">Depósitos recientes</h3>
+          </div>
+          {deposits.slice(0, 5).map((d) => {
+            const chip = statusChip(d.status);
+            return (
+              <div key={d.id} className="act-item">
+                <div className="act-left">
+                  <div className="act-icon in">
+                    <Icon name="arrow_downward" />
+                  </div>
+                  <div>
+                    <div className="act-id">Depósito</div>
+                    <div className="act-date">{timeAgo(d.created_at)}</div>
+                  </div>
+                </div>
+                <div className="act-right">
+                  <span className="act-amount">+ {Number(d.amount).toLocaleString('de-DE')} USDT</span>
+                  <span className={`act-status ${chip.ok ? 'ok' : chip.pend ? 'pend' : 'fail'}`}>
+                    <Icon name={chip.ok ? 'check_circle' : chip.pend ? 'pending' : 'error'} filled={chip.ok} />
+                    {chip.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Retirar({ usdt, balanceRefresh }) {
+  const navigate = useNavigate();
+  const [network, setNetwork] = useState('tron');
+  const [toAddress, setToAddress] = useState('');
+  const [amount, setAmount] = useState('');
+  const [busy, setBusy] = useState(false);
   const [done, setDone] = useState('');
+  const available = Number(usdt?.available || 0);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setDone('');
+    if (!getToken()) {
+      navigate('/login');
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await api.post('/withdrawals', {
+        asset: 'USDT',
+        network,
+        to_address: toAddress.trim(),
+        amount: Number(amount),
+      });
+      setDone(res.withdrawal ? `Retiro registrado (${res.withdrawal.id})`.replace(/\s+/g, ' ') : 'Retiro registrado.');
+      setAmount('');
+      setToAddress('');
+      balanceRefresh(true);
+    } catch (err) {
+      setDone('');
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="wallet-stack" onSubmit={submit}>
+      <div className="retire-card" style={{ marginTop: 0 }}>
+        <div className="retire-title">
+          <Icon name="upload" />
+          <span>Retirar USDT</span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="field">
+            <span className="field-label">Red</span>
+            <div className="net-select">
+              {NETWORKS.map((n) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  className={`net-opt ${network === n.id ? 'active' : ''}`}
+                  onClick={() => setNetwork(n.id)}
+                >
+                  <span className="trx-dot">
+                    <span>{n.short}</span>
+                  </span>
+                  <span>{n.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="field">
+            <span className="field-label">Dirección de destino ({network === 'tron' ? 'TRC20' : 'BEP20'})</span>
+            <div className="input-wrap">
+              <input
+                type="text"
+                placeholder="T… o 0x…"
+                value={toAddress}
+                onChange={(e) => setToAddress(e.target.value)}
+                autoComplete="off"
+                spellCheck="false"
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <span className="field-label">Monto (USDT)</span>
+            <div className="input-wrap">
+              <input
+                type="number"
+                placeholder="0.00"
+                min="1"
+                step="any"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+              <button type="button" className="max-btn" onClick={() => setAmount(String(available))} disabled={available <= 0}>
+                MÁX
+              </button>
+            </div>
+          </div>
+
+          <div className="fee-row">
+            <span>Disponible</span>
+            <span className="mono">{formatUSDT(available)}</span>
+          </div>
+          <div className="fee-row">
+            <span>Comisión</span>
+            <span className="mono">0.00 USDT</span>
+          </div>
+          <div className="fee-row">
+            <span>Mínimo</span>
+            <span className="mono">1.00 USDT</span>
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block confirm-btn" disabled={busy}>
+            {busy ? 'Procesando…' : 'Confirmar Retiro'}
+          </button>
+        </div>
+      </div>
+
+      {done && <p className="w-done">{done}</p>}
+    </form>
+  );
+}
+
+function Actividad({ deposits, withdrawals }) {
+  const items = [
+    ...deposits.map((d) => ({ id: d.id, kind: 'deposit', status: d.status, amount: Number(d.amount), date: d.created_at, addr: d.address })),
+    ...withdrawals.map((w) => ({ id: w.id, kind: 'withdrawal', status: w.status, amount: Number(w.amount), date: w.created_at, addr: w.to_address })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (items.length === 0) {
+    return <p className="empty">Todavía no hay movimientos.</p>;
+  }
+
+  return (
+    <div className="activity">
+      {items.map((it) => {
+        const chip = statusChip(it.status);
+        const isIn = it.kind === 'deposit';
+        return (
+          <div key={`${it.kind}-${it.id}`} className="act-item">
+            <div className="act-left">
+              <div className={`act-icon ${isIn ? 'in' : 'out'}`}>
+                <Icon name={isIn ? 'arrow_downward' : 'arrow_upward'} />
+              </div>
+              <div>
+                <div className="act-id">{isIn ? 'Depósito' : 'Retiro'}: #{it.id}</div>
+                <div className="act-date" style={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {timeAgo(it.date)} · {it.addr}
+                </div>
+              </div>
+            </div>
+            <div className="act-right">
+              <span className={`act-amount ${isIn ? 'pos' : ''}`}>
+                {isIn ? '+' : '-'}
+                {Number(it.amount).toLocaleString('de-DE')} USDT
+              </span>
+              <span className={`act-status ${chip.ok ? 'ok' : chip.pend ? 'pend' : 'fail'}`}>
+                <Icon name={chip.ok ? 'check_circle' : chip.pend ? 'pending' : 'error'} filled={chip.ok} />
+                {chip.label}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---- página ----
+
+const TABS = [
+  { id: 'resumen', label: 'Resumen', icon: 'account_balance_wallet' },
+  { id: 'depositar', label: 'Ingresar', icon: 'qr_code' },
+  { id: 'retirar', label: 'Retirar', icon: 'upload' },
+  { id: 'actividad', label: 'Actividad', icon: 'history' },
+];
+
+export default function Wallet() {
+  const [sp, setSp] = useSearchParams();
+  const tab = TABS.some((t) => t.id === sp.get('tab')) ? sp.get('tab') : 'resumen';
+  const { byAsset, refresh: balanceRefresh } = useBalance(15000);
+
+  const [wallets, setWallets] = useState([]);
+  const [deposits, setDeposits] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [rate, setRate] = useState(0);
 
   useEffect(() => {
     if (!getToken()) return;
     api
-      .get('/balances/me')
-      .then((res) => {
-        if (res.available != null) {
-          const b = Number(res.available);
-          setBal(b);
-          setEq(b * walletDemo.avgRate);
-        }
-      })
+      .get('/wallets')
+      .then((res) => setWallets(res.wallets || []))
+      .catch(() => {});
+    api
+      .get('/deposits')
+      .then((res) => setDeposits(res.deposits || []))
+      .catch(() => {});
+    api
+      .get('/withdrawals')
+      .then((res) => setWithdrawals(res.withdrawals || []))
+      .catch(() => {});
+    api
+      .get('/market/stats')
+      .then((res) => Number(res.avgRate) > 0 && setRate(Number(res.avgRate)))
       .catch(() => {});
   }, []);
 
-  const max = () => {
-    setMonto(bal.toFixed(2));
-    setEq(bal * walletDemo.avgRate);
-  };
-
-  const confirm = () => {
-    if (!monto || Number(monto) <= 0) return;
-    setBusy('ret');
-    if (!getToken()) {
-      setBusy('');
-      alert('Inicia sesión para retirar USDT.');
-      navigate('/login');
-      return;
-    }
-    api
-      .post('/withdrawals', { amount: Number(monto), network: 'TRC20' })
-      .then((res) => {
-        setDone(res.withdrawal?.id ? `Retiro #${res.withdrawal.id} registrado.` : 'Retiro registrado.');
-      })
-      .catch((err) => alert(err.message))
-      .finally(() => setBusy(''));
-  };
+  const usdt = byAsset('USDT');
+  const usdtLocked = Number(usdt?.locked || 0);
 
   return (
     <>
       <TopBar />
       <main className="app-shell page">
-        {done && <p className="auth-error" style={{ color: 'var(--primary)' }}>{done}</p>}
+        <h1 className="section-title" style={{ paddingTop: '1.5rem' }}>
+          Mi Billetera
+        </h1>
 
-        {/* saldo */}
-        <div className="w-card">
-          <div className="w-glow" />
-          <div className="w-head">
-            <span className="w-label">Saldo Disponible</span>
-            <span className="verified-chip">
-              <Icon name="verified" filled />
-              <span>Verificado</span>
-            </span>
-          </div>
-          <div className="w-balance">
-            {Number(bal).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
-            <span className="unit">USDT</span>
-          </div>
-          <div className="w-equiv">
-            <Icon name="swap_horiz" />
-            <span>≈ {formatCUP(eq)}</span>
-          </div>
-        </div>
-
-        {/* acciones */}
-        <div className="w-actions">
-          <button className="w-btn sell" onClick={() => navigate('/mercado?side=SELL')}>
-            <Icon name="sell" />
-            Vender USDT
-          </button>
-          <button className="w-btn ghost">
-            <Icon name="account_balance_wallet" />
-            Retirar
-          </button>
-        </div>
-
-        {/* retirar */}
-        <div className="retire-card">
-          <div className="retire-title">
-            <Icon name="logout" />
-            <span>Retirar a Wallet</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="field">
-              <span className="field-label">Monto (USDT)</span>
-              <div className="input-wrap">
-                <input type="number" placeholder="0.00" value={monto} onChange={(e) => setMonto(e.target.value)} />
-                <button className="max-btn" onClick={max}>
-                  MÁX
-                </button>
-              </div>
-            </div>
-            <div className="field">
-              <span className="field-label">Red</span>
-              <div className="field-row">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span className="trx-dot">
-                    <span>TRX</span>
-                  </span>
-                  <span>Tron (TRC20)</span>
-                </div>
-                <Icon name="keyboard_arrow_down" style={{ color: 'var(--on-surface-variant)' }} />
-              </div>
-            </div>
-            <div className="fee-row">
-              <span>Comisión de red</span>
-              <span className="mono">1.00 USDT</span>
-            </div>
-            <button className="btn btn-primary btn-block confirm-btn" onClick={confirm} disabled={!!busy}>
-              {busy === 'ret' ? 'Procesando…' : 'Confirmar Retiro'}
+        <div className="wallet-tabs">
+          {TABS.map((t) => (
+            <button key={t.id} className={`wt ${tab === t.id ? 'active' : ''}`} onClick={() => setSp({ tab: t.id }) }>
+              <Icon name={t.icon} />
+              <span>{t.label}</span>
             </button>
-          </div>
+          ))}
         </div>
 
-        {/* actividad */}
-        <div className="activity">
-          <div className="act-head">
-            <h3 className="act-title">Actividad Reciente</h3>
-            <button className="act-more">Ver todo</button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {walletDemo.activity.map((a) => (
-              <div key={a.id} className="act-item">
-                <div className="act-left">
-                  <div className={`act-icon ${a.kind}`}>
-                    <Icon name={a.icon} />
-                  </div>
-                  <div>
-                    <div className="act-id">ID: #{a.id}</div>
-                    <div className="act-date">{a.date}</div>
-                  </div>
-                </div>
-                <div className="act-right">
-                  <span className="act-amount">
-                    {a.sign}
-                    {Number(a.amount).toLocaleString('de-DE')} USDT
-                  </span>
-                  <span className={`act-status ${a.kind === 'pend' ? 'pend' : 'ok'}`}>
-                    <Icon name={a.kind === 'pend' ? 'pending' : 'check_circle'} filled />
-                    {a.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {tab === 'resumen' && <Resumen usdt={usdt} usdtLocked={usdtLocked} rate={rate} />}
+        {tab === 'depositar' && <Depositar wallets={wallets} deposits={deposits} />}
+        {tab === 'retirar' && <Retirar usdt={usdt} balanceRefresh={balanceRefresh} />}
+        {tab === 'actividad' && <Actividad deposits={deposits} withdrawals={withdrawals} />}
       </main>
       <BottomNav />
     </>

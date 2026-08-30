@@ -5,6 +5,7 @@ import Home from './pages/Home.jsx';
 import Market from './pages/Market.jsx';
 import AdDetail from './pages/AdDetail.jsx';
 import Sala from './pages/Sala.jsx';
+import SalaLista from './pages/SalaLista.jsx';
 import Login from './pages/Login.jsx';
 import Wallet from './pages/Wallet.jsx';
 
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/mercado" element={<Market />} />
       <Route path="/anuncio/:id" element={<AdDetail />} />
+      <Route path="/sala" element={<PrivateRoute><SalaLista /></PrivateRoute>} />
       <Route path="/sala/:dealId" element={<Sala />} />
       <Route path="/billetera" element={<PrivateRoute><Wallet /></PrivateRoute>} />
       <Route path="/login" element={<Login />} />
