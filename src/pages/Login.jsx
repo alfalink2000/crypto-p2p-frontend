@@ -5,6 +5,12 @@ import { login, register } from '../store/slices/authSlice.js';
 
 import Icon from '../components/Icon.jsx';
 
+const BADGES = [
+  { icon: 'schedule', label: 'Tasa en vivo' },
+  { icon: 'star', label: '4.9' },
+  { icon: 'verified_user', label: 'Escrow seguro' },
+];
+
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -13,6 +19,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(params.get('mode') !== 'register');
   const [showPwd, setShowPwd] = useState(false);
   const [wantSell, setWantSell] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,15 +28,29 @@ export default function Login() {
   const [card, setCard] = useState('');
   const [error, setError] = useState('');
 
+  const goBack = () => {
+    const from = params.get('next');
+    if (from) return navigate(from);
+    if (window.history.length > 2) return navigate(-1);
+    navigate('/');
+  };
+
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    setShake(false);
+  };
+
+  const fail = (m) => {
+    setShake(true);
+    setError(m);
+    window.setTimeout(() => setShake(false), 500);
   };
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email.trim() || !password) return setError('Completa todos los campos.');
+    if (!email.trim() || !password) return fail('Completa todos los campos.');
     const r = isLogin
       ? await dispatch(login({ email: email.trim(), password }))
       : await dispatch(
@@ -43,7 +64,7 @@ export default function Login() {
           })
         );
     if (r.meta?.requestStatus === 'rejected') {
-      setError(r.payload || 'Error de conexión.');
+      fail(r.payload || 'Error de conexión.');
       return;
     }
     navigate(params.get('next') || '/billetera');
@@ -51,23 +72,61 @@ export default function Login() {
 
   return (
     <main className="auth-wrap">
-      <div className="auth-blob" />
+      <div className="auth-aurora">
+        <div className="auth-blob a1" />
+        <div className="auth-blob a2" />
+        <div className="auth-blob a3" />
+      </div>
+      <div className="auth-dots" />
+
+      <button className="auth-back" onClick={goBack} aria-label="Volver atrás">
+        <Icon name="arrow_back" />
+      </button>
+
       <div className="auth-inner">
-        <div className="auth-logo">
-          <div className="auth-logo-tile">
-            <Icon name="currency_exchange" filled />
+        <header className="auth-hero">
+          <div className="auth-logo">
+            <div className="auth-logo-tile">
+              <Icon name="currency_exchange" filled />
+            </div>
           </div>
-        </div>
 
-        <h1 className="auth-title" id="screen-title">
-          {isLogin ? '¡Entra a lo tuyo!' : '¡Crea tu cuenta asere!'}
-        </h1>
-        <p className="auth-sub" id="screen-subtitle">
-          {isLogin ? 'Accede para continuar tus cambios seguros.' : 'Únete y empieza a operar al instante.'}
-        </p>
+          <h1 className="auth-title grad-title" id="screen-title">
+            {isLogin ? '¡Entra a lo tuyo!' : '¡Crea tu cuenta asere!'}
+          </h1>
+          <p className="auth-sub" id="screen-subtitle">
+            {isLogin ? 'Accede para continuar tus cambios seguros.' : 'Únete y empieza a operar al instante.'}
+          </p>
 
-        <div className="auth-card">
-          <form className="auth-form" onSubmit={submit} style={{ opacity: 1, transition: 'all 0.2s ease-out' }}>
+          <div className="auth-badges">
+            {BADGES.map((b) => (
+              <span className="auth-badge" key={b.label}>
+                <Icon name={b.icon} />
+                <span>{b.label}</span>
+              </span>
+            ))}
+          </div>
+        </header>
+
+        <div className={`auth-card${shake ? ' auth-shake' : ''}`}>
+          <div className="auth-seg" role="tablist" aria-label="Modo de acceso">
+            <button
+              className={`auth-seg-btn${isLogin ? ' on' : ''}`}
+              onClick={() => isLogin || toggleMode()}
+              disabled={authStatus === 'loading'}
+            >
+              Entrar
+            </button>
+            <button
+              className={`auth-seg-btn${!isLogin ? ' on' : ''}`}
+              onClick={() => (!isLogin ? toggleMode() : null)}
+              disabled={authStatus === 'loading'}
+            >
+              Registrarme
+            </button>
+          </div>
+
+          <form className="auth-form" onSubmit={submit}>
             <div className="auth-field">
               <span className="field-label">Usuario o Correo</span>
               <div className="auth-input-wrap">
@@ -119,7 +178,7 @@ export default function Login() {
             </div>
 
             {!isLogin && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="auth-extra">
                 <div className="auth-divider" />
 
                 <label className="vendor-toggle">
@@ -162,14 +221,12 @@ export default function Login() {
           </form>
         </div>
 
-        <div className="auth-toggle-row">
-          <p>
-            {isLogin ? '¿No tienes cuenta?' : '¿Ya eres de los nuestros?'}{' '}
-            <button className="mode-link" onClick={toggleMode} disabled={authStatus === 'loading'}>
-              {isLogin ? 'Crea tu cuenta asere' : 'Inicia sesión'}
-            </button>
-          </p>
-        </div>
+        <p className="auth-help">
+          {isLogin ? '¿No tienes cuenta?' : '¿Ya eres de los nuestros?'}{' '}
+          <button className="mode-link" onClick={toggleMode} disabled={authStatus === 'loading'}>
+            {isLogin ? 'Crea tu cuenta asere' : 'Inicia sesión'}
+          </button>
+        </p>
       </div>
     </main>
   );
