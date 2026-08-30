@@ -6,6 +6,8 @@ import { api, getToken } from '../api/client.js';
 import { deal as mockDeal, messages as mockMessages } from '../data/mock.js';
 import { formatCUP, formatRate, formatClock, pad, countdown } from '../lib/format.js';
 
+import Icon from '../components/Icon.jsx';
+
 function useTimer(ms) {
   const [left, setLeft] = useState({ h: 1, m: 59, s: 45 });
   useEffect(() => {
@@ -152,7 +154,7 @@ export default function Sala() {
       return (
         <div key={m.id} className="msg-sys ok">
           <div className="bubble-sys">
-            <span className="mi">check_circle</span>
+            <Icon name="check_circle" />
             <span>{m.content}</span>
           </div>
         </div>
@@ -162,7 +164,7 @@ export default function Sala() {
       return (
         <div key={m.id} className="msg-sys ok">
           <div className="bubble-sys">
-            <span className="mi">check_circle</span>
+            <Icon name="check_circle" />
             <span>{m.text}</span>
           </div>
         </div>
@@ -216,7 +218,7 @@ export default function Sala() {
                 </span>
                 {status !== 'COMPLETED' && status !== 'CANCELLED' && (
                   <span className="countdown">
-                    <span className="mi">schedule</span>
+                    <Icon name="schedule" />
                     <span className="animate-pulse">
                       {pad(t.h)}:{pad(t.m)}:{pad(t.s)}
                     </span>
@@ -244,11 +246,11 @@ export default function Sala() {
               </select>
             )}
             <button className="help-btn" aria-label="Ayuda">
-              <span className="mi">help</span>
+              <Icon name="help" />
             </button>
           </div>
           <div className="protect-banner">
-            <span className="mi filled">verified_user</span>
+            <Icon name="verified_user" filled />
             <span>Tus fondos están protegidos en Escrow</span>
           </div>
         </div>
@@ -256,7 +258,7 @@ export default function Sala() {
         <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {!isSeller && status === 'FROZEN' && (
             <div className="info-banner">
-              <span className="mi">info</span>
+              <Icon name="info" />
               <span>CambioYA nunca te pedirá tu contraseña ni códigos de verificación por este chat.</span>
             </div>
           )}
@@ -273,7 +275,7 @@ export default function Sala() {
                 )}
                 <div className="tl-step">
                   <div className={`tl-dot ${i < activeIdx ? 'done' : ''} ${i === activeIdx && !tls.dispute ? 'current' : ''}`}>
-                    {i < activeIdx ? <span className="mi">check</span> : s.icon === 'circle' ? <span /> : <span className="mi">{s.icon}</span>}
+                    {i < activeIdx ? <Icon name="check" /> : s.icon === 'circle' ? <span /> : <Icon name={s.icon} />}
                   </div>
                   <span className={`tl-label ${i <= activeIdx ? 'on' : ''}`}>{s.label}</span>
                 </div>
@@ -284,7 +286,7 @@ export default function Sala() {
           {tls.cancelled && (
             <div className="msg-sys ok">
               <div className="bubble-sys">
-                <span className="mi">info</span>
+                <Icon name="info" />
                 <span>Operación cancelada. El USDT fue devuelto al vendedor.</span>
               </div>
             </div>
@@ -293,7 +295,7 @@ export default function Sala() {
           {tls.dispute && (
             <div className="msg-sys">
               <div className="bubble-sys">
-                <span className="mi">warning</span>
+                <Icon name="warning" />
                 <span>Disputa abierta. Un mediador de CambioYA revisará la operación.</span>
               </div>
             </div>
@@ -314,7 +316,7 @@ export default function Sala() {
               </div>
               <div className="pay-box">
                 <div className="pay-bank">
-                  <span className="mi">account_balance</span>
+                  <Icon name="account_balance" />
                   <span>{payment.method}</span>
                 </div>
                 <div>
@@ -326,13 +328,13 @@ export default function Sala() {
                   <div className="pay-copy-row">
                     <span className="pay-value">{payment.account}</span>
                     <button className="copy-btn" onClick={copyAccount} aria-label="Copiar">
-                      <span className="mi">{copied ? 'check' : 'content_copy'}</span>
+                      <Icon name={copied ? 'check' : 'content_copy'} />
                     </button>
                   </div>
                 </div>
               </div>
               <div className="pay-warning">
-                <span className="mi">warning</span>
+                <Icon name="warning" />
                 <p>
                   Por tu seguridad, asegúrate de que el nombre del titular coincida exactamente en tu aplicación
                   bancaria antes de transferir.
@@ -360,7 +362,7 @@ export default function Sala() {
               </button>
               <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje…" />
               <button type="submit" className="send-btn" disabled={!text.trim() || busy === 'send' || !demo && myUserId() == null}>
-                <span className="mi">send</span>
+                <Icon name="send" />
               </button>
               <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" ref={fileRef} hidden onChange={onFile} />
             </form>
@@ -370,7 +372,7 @@ export default function Sala() {
                 !isSeller ? (
                   <>
                     <button className="btn btn-primary btn-block" onClick={() => fileRef.current?.click()} disabled={!!busy && busy !== 'proof'}>
-                      <span className="mi">upload_file</span>
+                      <Icon name="upload_file" />
                       <span>{busy === 'proof' ? 'Subiendo…' : 'Subir comprobante'}</span>
                     </button>
                     <button className="btn btn-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy}>
@@ -391,7 +393,7 @@ export default function Sala() {
               ) : !isSeller ? (
                 <>
                   <div className="btn btn-disabled-state btn-block">
-                    <span className="mi">check_circle</span>
+                    <Icon name="check_circle" />
                     <span>Pago Realizado</span>
                   </div>
                   <p className="note-under">El vendedor tiene un tiempo límite para liberar los fondos.</p>
@@ -402,7 +404,7 @@ export default function Sala() {
               ) : (
                 <>
                   <button className="btn btn-primary btn-block" onClick={() => act('release', '/confirm-received')} disabled={!!busy}>
-                    <span className="mi">verified</span>
+                    <Icon name="verified" />
                     <span>{busy === 'release' ? 'Confirmando…' : 'Confirmo que recibí el pago'}</span>
                   </button>
                   <button className="btn btn-ghost btn-block" onClick={() => act('dispute', '/dispute')} disabled={!!busy} style={{ color: 'var(--error)' }}>
@@ -416,7 +418,7 @@ export default function Sala() {
         {status === 'COMPLETED' && (
           <div className="sala-fixed">
             <div className="btn btn-disabled-state btn-block">
-              <span className="mi">task_alt</span>
+              <Icon name="task_alt" />
               <span>Operación completada</span>
             </div>
           </div>

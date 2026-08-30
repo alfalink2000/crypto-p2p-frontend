@@ -4,6 +4,8 @@ import { api, mapAd } from '../api/client.js';
 import { ads as mockAds } from '../data/mock.js';
 import { formatRate, formatUSDT } from '../lib/format.js';
 
+import Icon from '../components/Icon.jsx';
+
 export default function AdDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,7 +71,7 @@ export default function AdDetail() {
     <main className="app-shell" style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       <header className="pagehead">
         <button className="back-btn" onClick={() => navigate(-1)} aria-label="Volver">
-          <span className="mi">arrow_back</span>
+          <Icon name="arrow_back" />
         </button>
         <h1 className="pagehead-title">Detalle del Anuncio</h1>
       </header>
@@ -78,16 +80,16 @@ export default function AdDetail() {
         {/* perfil */}
         <div className="seller-card">
           <div className="seller-avatar">
-            <span className="mi">person</span>
+            <Icon name="person" />
           </div>
           <div className="seller-info">
             <div className="seller-name">
               {ad.seller.name}
-              {ad.seller.verified && <span className="mi filled">verified</span>}
+              {ad.seller.verified && <Icon name="verified" filled />}
             </div>
             <div className="seller-handle">@{ad.handle || 'usuario'}</div>
             <div className="seller-meta">
-              <span className="mi filled">star</span>
+              <Icon name="star" filled />
               <span>{ad.seller.rating}</span>
               <span className="dot" />
               <span>
@@ -110,7 +112,7 @@ export default function AdDetail() {
           <div className="spec-grid">
             <div className="spec">
               <span className="spec-label">
-                <span className="mi">arrow_downward</span> Mínimo
+                <Icon name="arrow_downward" /> Mínimo
               </span>
               <span className="spec-value">
                 {ad.min} <small>USDT</small>
@@ -118,7 +120,7 @@ export default function AdDetail() {
             </div>
             <div className="spec">
               <span className="spec-label">
-                <span className="mi">arrow_upward</span> Máximo
+                <Icon name="arrow_upward" /> Máximo
               </span>
               <span className="spec-value">
                 {ad.amount} <small>USDT</small>
@@ -126,7 +128,7 @@ export default function AdDetail() {
             </div>
             <div className="spec spec-wide">
               <span className="spec-label">
-                <span className="mi">account_balance</span> Métodos de Pago
+                <Icon name="account_balance" /> Métodos de Pago
               </span>
               <div className="method-pills">
                 <span className="method-pill">{ad.method}</span>
@@ -134,7 +136,7 @@ export default function AdDetail() {
             </div>
             <div className="spec spec-wide">
               <span className="spec-label">
-                <span className="mi">timer</span> Tiempo de Pago
+                <Icon name="timer" /> Tiempo de Pago
               </span>
               <span className="spec-value">Máximo 2 horas</span>
             </div>
@@ -146,7 +148,7 @@ export default function AdDetail() {
           <div className="note-card">
             <div className="note-bar" />
             <h3 className="note-title">
-              <span className="mi">description</span> Nota del vendedor
+              <Icon name="description" /> Nota del vendedor
             </h3>
             <p className="note-text">"{ad.note}"</p>
           </div>
@@ -155,7 +157,7 @@ export default function AdDetail() {
         {/* escrow */}
         <div className="escrow-note">
           <div className="escrow-ic">
-            <span className="mi filled">lock</span>
+            <Icon name="lock" filled />
           </div>
           <div>
             <h4>Tus fondos están protegidos</h4>
@@ -172,15 +174,13 @@ export default function AdDetail() {
           <button className="btn btn-primary fab-btn" onClick={start} disabled={starting || !!error}>
             {starting ? (
               <>
-                <span className="mi" style={{ animation: 'pulse 1s infinite' }}>
-                  sync
-                </span>
+                <Icon name="sync" style={{ animation: 'pulse 1s infinite' }} />
                 Creando operación…
               </>
             ) : (
               <>
                 <span>Iniciar Operación</span>
-                <span className="mi">arrow_forward</span>
+                <Icon name="arrow_forward" />
               </>
             )}
           </button>

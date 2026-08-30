@@ -6,6 +6,8 @@ import { api, getToken } from '../api/client.js';
 import { walletDemo } from '../data/mock.js';
 import { formatCUP } from '../lib/format.js';
 
+import Icon from '../components/Icon.jsx';
+
 export default function Wallet() {
   const navigate = useNavigate();
   const [bal, setBal] = useState(walletDemo.balance);
@@ -63,7 +65,7 @@ export default function Wallet() {
           <div className="w-head">
             <span className="w-label">Saldo Disponible</span>
             <span className="verified-chip">
-              <span className="mi filled">verified</span>
+              <Icon name="verified" filled />
               <span>Verificado</span>
             </span>
           </div>
@@ -72,7 +74,7 @@ export default function Wallet() {
             <span className="unit">USDT</span>
           </div>
           <div className="w-equiv">
-            <span className="mi">swap_horiz</span>
+            <Icon name="swap_horiz" />
             <span>≈ {formatCUP(eq)}</span>
           </div>
         </div>
@@ -80,11 +82,11 @@ export default function Wallet() {
         {/* acciones */}
         <div className="w-actions">
           <button className="w-btn sell" onClick={() => navigate('/mercado?side=SELL')}>
-            <span className="mi">sell</span>
+            <Icon name="sell" />
             Vender USDT
           </button>
           <button className="w-btn ghost">
-            <span className="mi">account_balance_wallet</span>
+            <Icon name="account_balance_wallet" />
             Retirar
           </button>
         </div>
@@ -92,7 +94,7 @@ export default function Wallet() {
         {/* retirar */}
         <div className="retire-card">
           <div className="retire-title">
-            <span className="mi">logout</span>
+            <Icon name="logout" />
             <span>Retirar a Wallet</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -114,9 +116,7 @@ export default function Wallet() {
                   </span>
                   <span>Tron (TRC20)</span>
                 </div>
-                <span className="mi" style={{ color: 'var(--on-surface-variant)' }}>
-                  expand_more
-                </span>
+                <Icon name="keyboard_arrow_down" style={{ color: 'var(--on-surface-variant)' }} />
               </div>
             </div>
             <div className="fee-row">
@@ -140,7 +140,7 @@ export default function Wallet() {
               <div key={a.id} className="act-item">
                 <div className="act-left">
                   <div className={`act-icon ${a.kind}`}>
-                    <span className="mi">{a.icon}</span>
+                    <Icon name={a.icon} />
                   </div>
                   <div>
                     <div className="act-id">ID: #{a.id}</div>
@@ -153,7 +153,7 @@ export default function Wallet() {
                     {Number(a.amount).toLocaleString('de-DE')} USDT
                   </span>
                   <span className={`act-status ${a.kind === 'pend' ? 'pend' : 'ok'}`}>
-                    <span className="mi filled">{a.kind === 'pend' ? 'pending' : 'check_circle'}</span>
+                    <Icon name={a.kind === 'pend' ? 'pending' : 'check_circle'} filled />
                     {a.status}
                   </span>
                 </div>

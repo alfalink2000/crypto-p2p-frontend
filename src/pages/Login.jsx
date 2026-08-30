@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, register } from '../store/slices/authSlice.js';
 
+import Icon from '../components/Icon.jsx';
+
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -44,7 +46,7 @@ export default function Login() {
       <div className="auth-inner">
         <div className="auth-logo">
           <div className="auth-logo-tile">
-            <span className="mi filled">currency_exchange</span>
+            <Icon name="currency_exchange" filled />
           </div>
         </div>
 
@@ -60,7 +62,7 @@ export default function Login() {
             <div className="auth-field">
               <span className="field-label">Usuario o Correo</span>
               <div className="auth-input-wrap">
-                <span className="mi">person</span>
+                <Icon name="person" />
                 <input
                   type="text"
                   placeholder="ej. asere_cuba"
@@ -77,7 +79,7 @@ export default function Login() {
               <div className="auth-field">
                 <span className="field-label">Nombre completo</span>
                 <div className="auth-input-wrap">
-                  <span className="mi">badge</span>
+                  <Icon name="badge" />
                   <input type="text" placeholder="Tu nombre real" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                 </div>
               </div>
@@ -86,7 +88,7 @@ export default function Login() {
             <div className="auth-field">
               <span className="field-label">Contraseña</span>
               <div className="auth-input-wrap">
-                <span className="mi">lock</span>
+                <Icon name="lock" />
                 <input
                   className="pad-r"
                   type={showPwd ? 'text' : 'password'}
@@ -97,7 +99,7 @@ export default function Login() {
                   required
                 />
                 <button type="button" className="pwd-eye" onClick={() => setShowPwd(!showPwd)} aria-label="Mostrar contraseña">
-                  <span className="mi">{showPwd ? 'visibility' : 'visibility_off'}</span>
+                  <Icon name={showPwd ? 'visibility' : 'visibility_off'} />
                 </button>
               </div>
               {isLogin && (
@@ -125,7 +127,7 @@ export default function Login() {
                 {wantSell && (
                   <div className="bank-details">
                     <div className="bank-title">
-                      <span className="mi filled">account_balance</span>
+                      <Icon name="account_balance" filled />
                       <span>Datos Bancarios</span>
                     </div>
                     <input className="bank-input" placeholder="Banco (ej. BPA, BANDEC)" value={bank} onChange={(e) => setBank(e.target.value)} />
@@ -146,7 +148,7 @@ export default function Login() {
 
             <button className="btn btn-primary btn-block auth-submit" type="submit" disabled={authStatus === 'loading'}>
               <span>{isLogin ? 'Entrar' : 'Registrarme'}</span>
-              <span className="mi">{authStatus === 'loading' ? 'sync' : 'arrow_forward'}</span>
+              <Icon name={authStatus === 'loading' ? 'sync' : 'arrow_forward'} />
             </button>
           </form>
         </div>

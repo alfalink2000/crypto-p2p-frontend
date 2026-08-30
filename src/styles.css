@@ -3,14 +3,6 @@
    Fuente de verdad: Stitch / DESIGN.md
    ================================================================ */
 
-@font-face {
-  font-family: 'Material Symbols Outlined';
-  font-style: normal;
-  font-weight: 100 700;
-  font-display: swap;
-  src: url('./assets/fonts/material-symbols-outlined.woff2') format('woff2');
-}
-
 :root {
   /* colores */
   --bg: #111318;
@@ -99,30 +91,16 @@ a {
 }
 
 .mi {
-  font-family: var(--font-icons);
-  font-weight: normal;
-  font-style: normal;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
   display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: 'liga' 1;
-  font-feature-settings: 'liga' 1;
-  font-variant-ligatures: common-ligatures;
-  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+  flex-shrink: 0;
+  line-height: 0;
   user-select: none;
 }
 
-/* Las variaciones de eje solo se aplican en la variante .filled;
-   en la base se usan los ejes por defecto para no romper las
-   ligaduras en WebViews de Android */
+/* .filled mantiene compatibilidad con el CSS existente; los SVG ya
+   traen su propia variante rellena. */
 .mi.filled {
-  -webkit-font-feature-settings: 'liga' 1;
-  font-feature-settings: 'liga' 1;
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 .txt-primary {

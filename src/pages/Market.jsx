@@ -6,6 +6,8 @@ import AdCard from '../components/AdCard.jsx';
 import { api, mapAd } from '../api/client.js';
 import { ads as mockAds, marketStats, methodChips } from '../data/mock.js';
 
+import Icon from '../components/Icon.jsx';
+
 export default function Market() {
   const [params] = useSearchParams();
   const [side, setSide] = useState(params.get('side') === 'SELL' ? 'SELL' : 'BUY');
@@ -69,13 +71,13 @@ export default function Market() {
 
         <div className="chip-row">
           <button className={`chip ${province !== 'Todas' ? 'on' : ''}`} onClick={() => setProvince(province === 'Todas' ? 'La Habana' : 'Todas')}>
-            <span className="mi">{province === 'Todas' ? 'location_on' : 'close'}</span>
+            <Icon name={province === 'Todas' ? 'location_on' : 'close'} />
             {province === 'Todas' ? 'Todas las provincias' : province}
           </button>
           {methodChips.map((m) => (
             <button key={m} className={`chip ${method === m ? 'on' : ''}`} onClick={() => setMethod(method === m ? '' : m)}>
               {m}
-              {method === m && <span className="mi">close</span>}
+              {method === m && <Icon name="close" />}
             </button>
           ))}
         </div>
@@ -88,7 +90,7 @@ export default function Market() {
             </span>
           </div>
           <span className="stats-trend">
-            <span className="mi">trending_up</span> +1.2%
+            <Icon name="trending_up" /> +1.2%
           </span>
         </div>
 

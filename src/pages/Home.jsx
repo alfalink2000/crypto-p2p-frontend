@@ -3,6 +3,8 @@ import TopBar from '../components/TopBar.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import { marketStats } from '../data/mock.js';
 
+import Icon from '../components/Icon.jsx';
+
 export default function Home() {
   return (
     <>
@@ -11,7 +13,7 @@ export default function Home() {
         <div className="flex flex-col gap-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <section className="hero">
             <div className="hero-logo">
-              <span className="mi filled">currency_exchange</span>
+              <Icon name="currency_exchange" filled />
             </div>
             <h1 className="hero-title">
               Cambia <span className="txt-primary">USDT</span> por <span className="txt-secondary">CUP</span>
@@ -19,7 +21,7 @@ export default function Home() {
             <p className="hero-sub">Seguro, rápido y sin vueltas. El mercado P2P hecho para nuestra gente.</p>
             <Link to="/mercado" className="btn btn-primary hero-cta">
               <span>Ver Mercado</span>
-              <span className="mi">arrow_forward</span>
+              <Icon name="arrow_forward" />
             </Link>
           </section>
 
@@ -30,7 +32,7 @@ export default function Home() {
               <div className="ticker-value">
                 <span>{marketStats.avgRate.toFixed(2)}</span>
                 <span className="ticker-trend">
-                  <span className="mi">trending_up</span> 1.2%
+                  <Icon name="trending_up" /> 1.2%
                 </span>
               </div>
             </div>
@@ -51,7 +53,7 @@ export default function Home() {
                   <h3 className="bento-title">Elige un anuncio</h3>
                   <p className="bento-text">Busca la mejor tasa. Fíjate en la reputación del vendedor y los bancos que acepta.</p>
                 </div>
-                <span className="mi bento-ico">search</span>
+                <Icon name="search" className="bento-ico" />
               </div>
               <div className="bento-item">
                 <div className="bento-num">02</div>
@@ -59,7 +61,7 @@ export default function Home() {
                   <h3 className="bento-title">Paga en tu banco</h3>
                   <p className="bento-text">Transfiere los CUP directamente a la cuenta del vendedor. Los USDT están bloqueados y seguros.</p>
                 </div>
-                <span className="mi bento-ico">account_balance</span>
+                <Icon name="account_balance" className="bento-ico" />
               </div>
               <div className="bento-item">
                 <div className="bento-num">03</div>
@@ -67,14 +69,14 @@ export default function Home() {
                   <h3 className="bento-title">Confirma y recibe</h3>
                   <p className="bento-text">Marca como pagado. Una vez el vendedor confirme, los USDT caen directo a tu billetera.</p>
                 </div>
-                <span className="mi bento-ico">done_all</span>
+                <Icon name="done_all" className="bento-ico" />
               </div>
             </div>
           </section>
 
           <section className="trust-grid">
             <div className="trust-card">
-              <span className="mi filled" style={{ color: 'var(--primary)' }}>lock</span>
+              <Icon name="lock" filled style={{ color: 'var(--primary)' }} />
               <span>
                 Escrow
                 <br />
@@ -82,7 +84,7 @@ export default function Home() {
               </span>
             </div>
             <div className="trust-card">
-              <span className="mi filled" style={{ color: 'var(--secondary)' }}>verified_user</span>
+              <Icon name="verified_user" filled style={{ color: 'var(--secondary)' }} />
               <span>
                 Verificado por
                 <br />

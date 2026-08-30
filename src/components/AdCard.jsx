@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
+import Icon from './Icon.jsx';
+
 function initials(name = '') {
   return name
     .split(/\s+/)
@@ -24,20 +26,18 @@ export default function AdCard({ ad, side }) {
             {ad.handle ? (
               <span style={{ fontWeight: 600, color: 'var(--on-surface)' }}>{initials(ad.handle.replace('@', ''))}</span>
             ) : (
-              <span className="mi">person</span>
+              <Icon name="person" />
             )}
             {ad.seller.verified && (
               <span className="avatar-badge">
-                <span className="mi filled" style={{ fontSize: 14, color: 'var(--primary)' }}>
-                  verified
-                </span>
+                <Icon name="verified" filled style={{ fontSize: 14, color: 'var(--primary)' }} />
               </span>
             )}
           </div>
           <div>
             <div className="offer-handle">@{ad.handle || ad.seller.name || 'usuario'}</div>
             <div className="offer-rating">
-              <span className="mi">star</span>
+              <Icon name="star" />
               <span>
                 {ad.seller.rating} ({ad.seller.trades})
               </span>
