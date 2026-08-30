@@ -11,6 +11,17 @@
       rel="stylesheet"
     />
     <title>CambioYA — P2P USDT/CUP</title>
+    <script>
+      (function () {
+        try {
+          var r = sessionStorage.getItem('cambioya:spa');
+          if (r) {
+            sessionStorage.removeItem('cambioya:spa');
+            history.replaceState(null, '', r);
+          }
+        } catch (e) {}
+      })(window);
+    </script>
   </head>
   <body>
     <div id="root"></div>

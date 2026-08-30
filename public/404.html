@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CambioYA</title>
+    <script>
+      (function () {
+        try {
+          sessionStorage.setItem('cambioya:spa', location.pathname + location.search + location.hash);
+        } catch (e) {}
+        location.replace('/crypto-p2p-frontend/');
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
