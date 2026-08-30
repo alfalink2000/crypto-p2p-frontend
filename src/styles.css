@@ -2403,34 +2403,25 @@ a {
   position: absolute;
   border-radius: 50%;
   filter: blur(90px);
-  opacity: 0.55;
-  animation: auth-float 14s ease-in-out infinite alternate;
+  opacity: 0.5;
+  animation: auth-float 18s ease-in-out infinite alternate;
 }
 
 .auth-blob.a1 {
   top: -12%;
   left: -14%;
-  width: 70%;
-  height: 420px;
-  background: radial-gradient(circle at 30% 40%, rgba(63, 229, 108, 0.22), transparent 70%);
+  width: 66%;
+  height: 400px;
+  background: radial-gradient(circle at 30% 40%, rgba(63, 229, 108, 0.16), transparent 70%);
 }
 
 .auth-blob.a2 {
-  bottom: -15%;
-  right: -18%;
-  width: 72%;
-  height: 460px;
-  background: radial-gradient(circle at 60% 50%, rgba(63, 152, 239, 0.18), transparent 70%);
-  animation-delay: -6s;
-}
-
-.auth-blob.a3 {
-  top: 30%;
-  right: -25%;
-  width: 55%;
-  height: 320px;
-  background: radial-gradient(circle at 50% 50%, rgba(254, 170, 0, 0.14), transparent 70%);
-  animation-delay: -3s;
+  bottom: -18%;
+  right: -16%;
+  width: 60%;
+  height: 380px;
+  background: radial-gradient(circle at 60% 50%, rgba(187, 203, 184, 0.08), transparent 70%);
+  animation-delay: -9s;
 }
 
 @keyframes auth-float {
@@ -2514,10 +2505,7 @@ a {
 }
 
 .grad-title {
-  background: linear-gradient(115deg, #3fe56c 12%, #39d8a6 55%, #3f98ef 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--on-surface);
 }
 
 .auth-sub {
@@ -2551,15 +2539,7 @@ a {
 
 .auth-badge .mi {
   font-size: 14px;
-  color: var(--primary);
-}
-
-.auth-badge:nth-child(2) .mi {
-  color: var(--secondary-container);
-}
-
-.auth-badge:nth-child(3) .mi {
-  color: var(--tertiary-container);
+  color: var(--on-surface-variant);
 }
 
 .auth-card {
@@ -2582,7 +2562,7 @@ a {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(63, 229, 108, 0.8), rgba(63, 152, 239, 0.6), transparent);
+  background: linear-gradient(90deg, transparent, rgba(63, 229, 108, 0.55), transparent);
 }
 
 @keyframes auth-in {
@@ -2622,9 +2602,9 @@ a {
 }
 
 .auth-seg-btn.on {
-  background: linear-gradient(135deg, var(--primary), #2fbd58);
-  color: #051411;
-  box-shadow: 0 4px 14px rgba(63, 229, 108, 0.35);
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 4px 14px rgba(63, 229, 108, 0.25);
 }
 
 .auth-form {
@@ -2660,14 +2640,14 @@ a {
 .auth-input-wrap input {
   width: 100%;
   height: var(--touch);
-  background: var(--surface);
+  background: var(--surface-low);
+  border: 1px solid var(--outline-variant);
   border-radius: var(--r-xl);
-  box-shadow: inset 0 0 0 1px var(--outline-variant);
   padding: 0 1rem 0 2.75rem;
   color: var(--on-surface);
   font-size: 16px;
   outline: none;
-  transition: box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .auth-input-wrap input.pad-r {
@@ -2675,13 +2655,13 @@ a {
 }
 
 .auth-input-wrap input::placeholder {
-  color: rgba(187, 203, 184, 0.5);
+  color: rgba(187, 203, 184, 0.45);
 }
 
 .auth-input-wrap input:focus {
-  box-shadow:
-    inset 0 0 0 1px var(--primary),
-    0 0 0 3px rgba(63, 229, 108, 0.25);
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(63, 229, 108, 0.15);
 }
 
 .pwd-eye {
@@ -2814,23 +2794,24 @@ a {
 .bank-input {
   width: 100%;
   height: var(--touch);
-  background: var(--surface);
+  background: var(--surface-low);
+  border: 1px solid var(--outline-variant);
   border-radius: var(--r-xl);
-  box-shadow: inset 0 0 0 1px var(--outline-variant);
   padding: 0 1rem;
   color: var(--on-surface);
   font-size: 14px;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .bank-input::placeholder {
-  color: rgba(187, 203, 184, 0.5);
+  color: rgba(187, 203, 184, 0.45);
 }
 
 .bank-input:focus {
-  box-shadow:
-    inset 0 0 0 1px var(--primary),
-    0 0 0 3px rgba(63, 229, 108, 0.25);
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(63, 229, 108, 0.15);
 }
 
 .auth-extra {

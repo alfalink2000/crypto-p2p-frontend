@@ -8,7 +8,7 @@ import Icon from '../components/Icon.jsx';
 const BADGES = [
   { icon: 'schedule', label: 'Tasa en vivo' },
   { icon: 'star', label: '4.9' },
-  { icon: 'verified_user', label: 'Escrow seguro' },
+  { icon: 'verified_user', label: 'Intercambio seguro' },
 ];
 
 export default function Login() {
@@ -35,11 +35,14 @@ export default function Login() {
     navigate('/');
   };
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
+  const setMode = (login) => {
+    if (login === isLogin) return;
+    setIsLogin(login);
     setError('');
     setShake(false);
   };
+
+  const toggleMode = () => setMode(!isLogin);
 
   const fail = (m) => {
     setShake(true);
@@ -112,14 +115,14 @@ export default function Login() {
           <div className="auth-seg" role="tablist" aria-label="Modo de acceso">
             <button
               className={`auth-seg-btn${isLogin ? ' on' : ''}`}
-              onClick={() => isLogin || toggleMode()}
+              onClick={() => setMode(true)}
               disabled={authStatus === 'loading'}
             >
               Entrar
             </button>
             <button
               className={`auth-seg-btn${!isLogin ? ' on' : ''}`}
-              onClick={() => (!isLogin ? toggleMode() : null)}
+              onClick={() => setMode(false)}
               disabled={authStatus === 'loading'}
             >
               Registrarme
