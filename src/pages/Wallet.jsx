@@ -8,8 +8,6 @@ import { formatCUP, formatUSDT, timeAgo } from '../lib/format.js';
 import useBalance from '../lib/useBalance.js';
 
 import usdtIcon from '../assets/tokens/usdt.png';
-import tronIcon from '../assets/tokens/tron.png';
-import bnbIcon from '../assets/tokens/bnb.png';
 
 import Icon from '../components/Icon.jsx';
 
@@ -19,7 +17,6 @@ const NETWORKS = [
 ];
 
 const WALLET_NET = { tron: 'USDT (TRC20)', bsc: 'USDT (BEP20)' };
-const NET_ICON = { tron: tronIcon, bsc: bnbIcon };
 
 const DEP_STATUS = { pending: 'Pendiente', confirmed: 'Confirmado', failed: 'Fallido' };
 const WDR_STATUS = { pending: 'Pendiente', processing: 'Procesando', completed: 'Completado', failed: 'Fallido', refunded: 'Reembolsado' };
@@ -135,7 +132,6 @@ function Depositar({ wallets, deposits }) {
       {wallets.map((w, i) => (
         <div key={`${w.network}-${i}`} className="dep-card">
           <div className="dep-head">
-            <img className="token-ic net" src={NET_ICON[w.network]} alt={w.network} />
             <span className="dep-net">
               <img className="token-ic" src={usdtIcon} alt="" /> {WALLET_NET[w.network] || w.network}
             </span>
@@ -254,7 +250,7 @@ function Retirar({ usdt, balanceRefresh }) {
                   onClick={() => setNetwork(n.id)}
                 >
                   <span className="trx-dot">
-                    <img className="token-ic net" src={NET_ICON[n.id]} alt={n.id} />
+                    <img className="token-ic net" src={usdtIcon} alt="USDT" />
                   </span>
                   <span>{n.label}</span>
                 </button>
