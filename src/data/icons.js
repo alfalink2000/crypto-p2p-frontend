@@ -153,6 +153,8 @@ import _hourglass_empty from '@material-symbols/svg-400/outlined/hourglass_empty
 import _hourglass_empty_fill from '@material-symbols/svg-400/outlined/hourglass_empty-fill.svg?raw';
 import _content_paste from '@material-symbols/svg-400/outlined/content_paste.svg?raw';
 import _content_paste_fill from '@material-symbols/svg-400/outlined/content_paste-fill.svg?raw';
+import _group from '@material-symbols/svg-400/outlined/group.svg?raw';
+import _group_fill from '@material-symbols/svg-400/outlined/group-fill.svg?raw';
 
 const paths = (raw) => (raw.match(/<path d="[^"]*"/g) || []).map((m) => m.slice(9, -1));
 
@@ -311,4 +313,6 @@ export const iconPaths = {
   'hourglass_empty-fill': paths(_hourglass_empty_fill),
   'content_paste': paths(_content_paste),
   'content_paste-fill': paths(_content_paste_fill),
+  'group': paths(_group),
+  'group-fill': paths(_group_fill),
 };

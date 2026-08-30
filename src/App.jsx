@@ -8,6 +8,7 @@ import Sala from './pages/Sala.jsx';
 import SalaLista from './pages/SalaLista.jsx';
 import Login from './pages/Login.jsx';
 import Wallet from './pages/Wallet.jsx';
+import Admin from './pages/Admin.jsx';
 
 function PrivateRoute({ children }) {
   const token = useSelector((s) => s.auth.token);
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/sala" element={<PrivateRoute><SalaLista /></PrivateRoute>} />
       <Route path="/sala/:dealId" element={<Sala />} />
       <Route path="/billetera" element={<PrivateRoute><Wallet /></PrivateRoute>} />
+      <Route path="/admin" element={<Admin />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
       <Route path="*" element={<Navigate to="/" replace />} />

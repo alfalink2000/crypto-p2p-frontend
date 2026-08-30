@@ -3088,3 +3088,235 @@ a.back-top {
 .act-amount.pos {
   color: var(--primary);
 }
+
+/* ================================================================
+   PANEL ADMIN
+   ================================================================ */
+.admin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+}
+
+.admin-tabs {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+.adm-stat {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.adm-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.adm-stat-ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+}
+
+.adm-stat-ic .mi {
+  font-size: 18px;
+}
+
+.adm-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.adm-stat-label {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-top: 0.25rem;
+}
+
+.adm-stat-sub {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+}
+
+.adm-search {
+  margin-bottom: 0.75rem;
+  padding-left: 0.75rem;
+  color: var(--on-surface-variant);
+}
+
+.adm-search input {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.adm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.adm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+  text-align: left;
+}
+
+.adm-row.sel {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.adm-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.adm-row-info {
+  min-width: 0;
+}
+
+.adm-row-name {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.adm-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.adm-role {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  background: rgba(63, 229, 108, 0.15);
+  color: var(--primary);
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+}
+
+.adm-amt {
+  font-size: 13px;
+}
+
+.adm-detail {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.adm-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.adm-detail-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.adm-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.adm-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--on-surface-variant);
+  background: var(--surface-variant);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--r-full);
+}
+
+.adm-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adm-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--on-surface-variant);
+  margin-bottom: 0.35rem;
+}
+
+.adm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.btn-small {
+  min-height: 34px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--r-lg);
+  padding: 0 0.6rem;
+  background: var(--surface-high);
+  color: var(--on-surface);
+  gap: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-small.ok {
+  background: rgba(63, 229, 108, 0.12);
+  color: var(--primary);
+}
+
+.btn-small.danger {
+  background: rgba(255, 180, 171, 0.12);
+  color: var(--error);
+}
+
+.btn-small .mi {
+  font-size: 16px;
+}
+
+.adm-credit {
+  margin-top: 0.25rem;
+}
+
+.adm-dispute {
+  margin-bottom: 0.75rem;
+}
