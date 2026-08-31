@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { login, register } from '../store/slices/authSlice.js';
+import { login, register, verify2FA } from '../store/slices/authSlice.js';
 
 import Icon from '../components/Icon.jsx';
 
@@ -27,6 +27,8 @@ export default function Login() {
   const [bank, setBank] = useState('');
   const [card, setCard] = useState('');
   const [error, setError] = useState('');
+  const [twoFactorToken, setTwoFactorToken] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
 
   const goBack = () => {
     const from = params.get('next');
@@ -68,6 +70,23 @@ export default function Login() {
         );
     if (r.meta?.requestStatus === 'rejected') {
       fail(r.payload || 'Error de conexión.');
+      return;
+    }
+    if (r.payload?.needsTwoFactor) {
+      setTwoFactorToken(r.payload.twoFactorToken);
+      setTwoFactorCode('');
+      return;
+    }
+    navigate(params.get('next') || '/billetera');
+  };
+
+  const submit2FA = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (twoFactorCode.length !== 6) return fail('Ingresa los 6 dígitos.');
+    const r = await dispatch(verify2FA({ twoFactorToken, code: twoFactorCode }));
+    if (r.meta?.requestStatus === 'rejected') {
+      fail(r.payload || 'Código incorrecto.');
       return;
     }
     navigate(params.get('next') || '/billetera');
@@ -112,6 +131,7 @@ export default function Login() {
         </header>
 
         <div className={`auth-card${shake ? ' auth-shake' : ''}`}>
+          {!twoFactorToken && (
           <div className="auth-seg" role="tablist" aria-label="Modo de acceso">
             <button
               className={`auth-seg-btn${isLogin ? ' on' : ''}`}
@@ -128,7 +148,48 @@ export default function Login() {
               Registrarme
             </button>
           </div>
+          )}
 
+          {twoFactorToken ? (
+            <form className="auth-form" onSubmit={submit2FA}>
+              <div className="auth-field">
+                <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+                  <Icon name="security" style={{ fontSize: '2.5rem', opacity: 0.7 }} />
+                </div>
+                <span className="field-label" style={{ textAlign: 'center', display: 'block' }}>
+                  Código de verificación
+                </span>
+                <p style={{ color: 'var(--text2)', fontSize: '0.82rem', textAlign: 'center', marginBottom: '0.75rem' }}>
+                  Abre tu app de autenticación y escribe el código de 6 dígitos.
+                </p>
+                <div className="auth-input-wrap">
+                  <Icon name="pin" />
+                  <input
+                    className="totp-input"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    placeholder="••••••"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    required
+                  />
+                </div>
+              </div>
+              {error && <p className="auth-error">{error}</p>}
+              <button className="btn btn-primary btn-block auth-submit" type="submit" disabled={authStatus === 'loading'}>
+                <span>Verificar</span>
+                <Icon name={authStatus === 'loading' ? 'sync' : 'arrow_forward'} />
+              </button>
+              <button type="button" className="mode-link" onClick={() => { setTwoFactorToken(null); setError(''); }}
+                style={{ marginTop: '0.75rem', textAlign: 'center', display: 'block', width: '100%' }}>
+                Volver al inicio de sesión
+              </button>
+            </form>
+          ) : (
           <form className="auth-form" onSubmit={submit}>
             <div className="auth-field">
               <span className="field-label">Usuario o Correo</span>
@@ -222,6 +283,7 @@ export default function Login() {
               <Icon name={authStatus === 'loading' ? 'sync' : 'arrow_forward'} />
             </button>
           </form>
+          )}
         </div>
 
         <p className="auth-help">

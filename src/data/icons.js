@@ -159,6 +159,8 @@ import _settings from '@material-symbols/svg-400/outlined/settings.svg?raw';
 import _settings_fill from '@material-symbols/svg-400/outlined/settings-fill.svg?raw';
 import _save from '@material-symbols/svg-400/outlined/save.svg?raw';
 import _save_fill from '@material-symbols/svg-400/outlined/save-fill.svg?raw';
+import _pin from '@material-symbols/svg-400/outlined/pin.svg?raw';
+import _pin_fill from '@material-symbols/svg-400/outlined/pin-fill.svg?raw';
 
 const paths = (raw) => (raw.match(/<path d="[^"]*"/g) || []).map((m) => m.slice(9, -1));
 
@@ -323,4 +325,6 @@ export const iconPaths = {
   'settings-fill': paths(_settings_fill),
   'save': paths(_save),
   'save-fill': paths(_save_fill),
+  'pin': paths(_pin),
+  'pin-fill': paths(_pin_fill),
 };

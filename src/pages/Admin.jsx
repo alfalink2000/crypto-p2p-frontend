@@ -15,6 +15,7 @@ const TABS = [
   { id: 'withdrawals', label: 'Retiros', icon: 'upload' },
   { id: 'disputes', label: 'Disputas', icon: 'warning' },
   { id: 'settings', label: 'Ajustes', icon: 'settings' },
+  { id: 'security', label: 'Seguridad', icon: 'security' },
 ];
 
 function Stat({ label, value, sub, icon, accent }) {
@@ -474,8 +475,139 @@ function Settings() {
   );
 }
 
+function Security() {
+  const [info, setInfo] = useState(null);
+  const [code, setCode] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = () => {
+    api.get('/admin/2fa/setup').then(setInfo).catch(() => {});
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const enable = async () => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const r = await api.post('/admin/2fa/enable', { code });
+      setMsg(r.enabled ? 'Verificación en dos pasos activada.' : 'No se pudo activar.');
+      setInfo((i) => ({ ...i, enabled: r.enabled }));
+      setCode('');
+    } catch (e) {
+      setMsg(e.message);
+    }
+    setBusy(false);
+  };
+
+  const disable = async () => {
+    setBusy(true);
+    setMsg('');
+    try {
+      const r = await api.post('/admin/2fa/disable', { code });
+      setMsg(!r.enabled ? 'Verificación en dos pasos desactivada.' : 'No se pudo desactivar.');
+      setInfo((i) => ({ ...i, enabled: r.enabled }));
+      setCode('');
+    } catch (e) {
+      setMsg(e.message);
+    }
+    setBusy(false);
+  };
+
+  const regen = async () => {
+    setBusy(true);
+    setMsg('');
+    try {
+      await api.del('/admin/2fa/setup');
+      load();
+      setMsg('Secreto regenerado. Vuelve a escanearlo en tu app.');
+    } catch (e) {
+      setMsg(e.message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="wallet-stack">
+      <div className="dep-card">
+        <div className="dep-head">
+          <Icon name="security" />
+          <span className="dep-net">Verificación en dos pasos (2FA)</span>
+        </div>
+
+        {info && (
+          <>
+            {!info.enabled && (
+              <>
+                <div className="settings-row">
+                  <span>Estado</span>
+                  <span>Desactivado</span>
+                </div>
+                <p className="w-note">
+                  Escanea el código QR o copia el secreto en tu app de autenticación (Google Authenticator, Authy, etc.),
+                  luego escribe un código para confirmar.
+                </p>
+                <div className="field" style={{ marginTop: '0.5rem' }}>
+                  <span className="field-label">Secreto (base32)</span>
+                  <div className="input-wrap">
+                    <input className="mono" readOnly value={info.secret} style={{ fontSize: '0.78rem' }} />
+                  </div>
+                </div>
+                <div className="field">
+                  <span className="field-label">Código de 6 dígitos</span>
+                  <div className="input-wrap">
+                    <input type="text" inputMode="numeric" maxLength={6} value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+                    <button className="max-btn" type="button" onClick={enable} disabled={busy || code.length !== 6}>
+                      ACTIVAR
+                    </button>
+                  </div>
+                  <button className="copy-btn" type="button" onClick={regen} disabled={busy} style={{ marginTop: '0.5rem' }}>
+                    <Icon name="history" /> Regenerar secreto
+                  </button>
+                </div>
+              </>
+            )}
+
+            {info.enabled && (
+              <>
+                <div className="settings-row">
+                  <span>Estado</span>
+                  <span style={{ color: 'var(--ok, #2bd46b)', fontWeight: 600 }}>Activado</span>
+                </div>
+                <p className="w-note">
+                  Cada vez que un administrador inicie sesión deberá escribir un código de tu app de autenticación.
+                </p>
+                <div className="field" style={{ marginTop: '0.5rem' }}>
+                  <span className="field-label">Código para desactivar</span>
+                  <div className="input-wrap">
+                    <input type="text" inputMode="numeric" maxLength={6} value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} />
+                    <button className="max-btn" type="button" onClick={disable} disabled={busy || code.length !== 6}>
+                      DESACTIVAR
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {msg && <p className="settings-msg">{msg}</p>}
+      </div>
+
+      <p className="w-note">
+        La verificación en dos pasos protege el panel de administración. Sin ella, las credenciales del admin
+        son el único acceso para acreditar saldos y resolver disputas.
+      </p>
+    </div>
+  );
+}
+
 export default function Admin() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((s) => s.auth.user);
   const [tab, setTab] = useState('dashboard');
@@ -540,6 +672,7 @@ export default function Admin() {
         {tab === 'withdrawals' && <Withdrawals withdrawals={withdrawals} refresh={load} />}
         {tab === 'disputes' && <Disputes deals={deals} reports={reports} refresh={load} />}
         {tab === 'settings' && <Settings />}
+        {tab === 'security' && <Security />}
       </main>
     </>
   );

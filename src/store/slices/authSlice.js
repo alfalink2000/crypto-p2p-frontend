@@ -11,6 +11,17 @@ export const login = createAsyncThunk('auth/login', async ({ email, password }, 
   }
 });
 
+export const verify2FA = createAsyncThunk(
+  'auth/verify2FA',
+  async ({ twoFactorToken, code }, { rejectWithValue }) => {
+    try {
+      return await api.post('/auth/2fa/verify', { twoFactorToken, code });
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const register = createAsyncThunk(
   'auth/register',
   async (payload, { rejectWithValue }) => {
@@ -48,6 +59,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'idle';
+        if (action.payload.needsTwoFactor) return;
         state.token = action.payload.token;
         state.user = action.payload.user;
         localStorage.setItem(TOKEN_KEY, action.payload.token);
@@ -69,6 +81,21 @@ const authSlice = createSlice({
         localStorage.setItem('crypto_p2p_user', JSON.stringify(action.payload.user));
       })
       .addCase(register.rejected, (state, action) => {
+        state.status = 'idle';
+        state.error = action.payload;
+      })
+      .addCase(verify2FA.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+        localStorage.setItem(TOKEN_KEY, action.payload.token);
+        localStorage.setItem('crypto_p2p_user', JSON.stringify(action.payload.user));
+      })
+      .addCase(verify2FA.rejected, (state, action) => {
         state.status = 'idle';
         state.error = action.payload;
       });
